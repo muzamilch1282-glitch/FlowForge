@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Logo } from '@/components/shared/logo';
+import { Logo, UserProfileDropdown } from '@/components/shared';
 import { sidebarNavigation } from '@/constants/navigation';
 import { useAppStore } from '@/store/app-store';
 
@@ -86,15 +86,17 @@ export function MobileSidebar() {
 
         {/* User Section */}
         <div className="border-t border-border p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
-              FF
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">FlowForge User</p>
-              <p className="text-xs text-muted-foreground">user@flowforge.io</p>
-            </div>
-          </div>
+          <UserProfileDropdown side="top" align="center">
+            <button className="flex w-full items-center gap-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
+                FF
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">FlowForge User</p>
+                <p className="text-xs text-muted-foreground">user@flowforge.io</p>
+              </div>
+            </button>
+          </UserProfileDropdown>
         </div>
       </div>
     </>

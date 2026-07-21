@@ -1,6 +1,4 @@
-import { Sidebar } from '@/components/layout/sidebar';
-import { TopNavbar } from '@/components/layout/top-navbar';
-import { Footer } from '@/components/layout/footer';
+import { Sidebar, TopNavbar, Footer, ProtectedLayout } from '@/components/layout';
 
 export default function DashboardLayout({
   children,
@@ -17,11 +15,13 @@ export default function DashboardLayout({
         {/* Top navbar */}
         <TopNavbar />
 
-        {/* Page content */}
+        {/* Page content with smooth transitions */}
         <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-7xl">
-            {children}
-          </div>
+          <ProtectedLayout>
+            <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-7xl">
+              {children}
+            </div>
+          </ProtectedLayout>
         </main>
 
         {/* Footer */}
