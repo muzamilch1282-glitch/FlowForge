@@ -42,9 +42,15 @@ export function RegisterForm() {
   const onSubmit = async (data: RegisterFormValues) => {
     try {
       setIsLoading(true);
-      await authService.registerWithEmail(data.email, data.password, data.fullName);
-      toast.success('Account created successfully!');
-      router.push('/dashboard');
+      const response = await authService.registerWithEmail(data.email, data.password, data.fullName);
+      
+      if (response.session) {
+        toast.success('Account created successfully!');
+        router.push('/dashboard');
+      } else {
+        toast.success('Account created! Please check your email to verify your account.');
+        router.push('/login');
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account. Please try again.');
     } finally {

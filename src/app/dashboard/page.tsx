@@ -1,135 +1,73 @@
 import type { Metadata } from 'next';
-import { PageHeader } from '@/components/shared/page-header';
-import {
-  FolderKanban,
-  CheckSquare,
-  Users,
-  TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
-} from 'lucide-react';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { StatCard } from '@/components/dashboard/stat-card';
+import { ProjectOverviewCard } from '@/components/dashboard/project-overview-card';
+import { RecentActivity } from '@/components/dashboard/recent-activity';
+import { QuickActions } from '@/components/dashboard/quick-actions';
+import { EmptyState } from '@/components/dashboard/empty-state';
+import { mockStats, mockProjects, mockActivities, mockQuickActions } from '@/data/dashboard';
 
 export const metadata: Metadata = {
-  title: 'Dashboard',
+  title: 'Dashboard | FlowForge',
+  description: 'FlowForge Dashboard Overview',
 };
-
-const stats = [
-  {
-    title: 'Active Projects',
-    value: '12',
-    change: '+2',
-    trend: 'up' as const,
-    icon: FolderKanban,
-    color: 'from-violet-500 to-indigo-600',
-  },
-  {
-    title: 'Open Tasks',
-    value: '48',
-    change: '-5',
-    trend: 'down' as const,
-    icon: CheckSquare,
-    color: 'from-emerald-500 to-teal-600',
-  },
-  {
-    title: 'Team Members',
-    value: '8',
-    change: '+1',
-    trend: 'up' as const,
-    icon: Users,
-    color: 'from-amber-500 to-orange-600',
-  },
-  {
-    title: 'Completion Rate',
-    value: '87%',
-    change: '+4%',
-    trend: 'up' as const,
-    icon: TrendingUp,
-    color: 'from-rose-500 to-pink-600',
-  },
-];
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title="Dashboard"
-        description="Welcome back! Here's an overview of your workspace."
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <DashboardHeader 
+        title="Dashboard" 
+        welcomeMessage="Welcome back! Here's what's happening with your projects today." 
       />
 
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={stat.title}
-              className="group relative overflow-hidden rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:shadow-lg hover:shadow-violet-500/5 hover:-translate-y-0.5"
-            >
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {stat.title}
-                  </p>
-                  <p className="text-3xl font-bold tracking-tight text-foreground">
-                    {stat.value}
-                  </p>
-                </div>
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${stat.color} shadow-md`}
-                >
-                  <Icon className="h-5 w-5 text-white" />
-                </div>
-              </div>
-              <div className="mt-3 flex items-center gap-1">
-                {stat.trend === 'up' ? (
-                  <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
-                ) : (
-                  <ArrowDownRight className="h-3.5 w-3.5 text-emerald-500" />
-                )}
-                <span className="text-xs font-medium text-emerald-500">
-                  {stat.change}
-                </span>
-                <span className="text-xs text-muted-foreground">vs last week</span>
-              </div>
-              {/* Decorative gradient */}
-              <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br ${stat.color} opacity-5 transition-opacity group-hover:opacity-10`} />
-            </div>
-          );
-        })}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {mockStats.map((stat) => (
+          <StatCard key={stat.id} stat={stat} />
+        ))}
       </div>
 
-      {/* Placeholder sections */}
+      {/* Main Layout */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Activity */}
-        <div className="lg:col-span-2 rounded-xl border border-border bg-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
-            Recent Activity
-          </h3>
-          <div className="flex items-center justify-center py-12 text-muted-foreground">
-            <p className="text-sm">Activity feed will appear here</p>
+        {/* Projects Column */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              Active Projects
+            </h2>
+            <button className="text-sm font-medium text-primary hover:underline">
+              View all projects
+            </button>
           </div>
+          
+          {mockProjects.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {mockProjects.map((project) => (
+                <ProjectOverviewCard key={project.id} project={project} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState 
+              title="No active projects"
+              description="Get started by creating a new project or joining an existing one."
+              actionLabel="Create Project"
+              onAction={() => console.log('Create project')}
+            />
+          )}
         </div>
 
-        {/* Quick Actions */}
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
-            Quick Actions
-          </h3>
-          <div className="space-y-3">
-            {[
-              'Create New Project',
-              'Add Task',
-              'Invite Team Member',
-              'View Reports',
-            ].map((action) => (
-              <button
-                key={action}
-                className="flex w-full items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm font-medium text-foreground hover:bg-accent transition-colors"
-              >
-                {action}
-              </button>
-            ))}
-          </div>
+        {/* Sidebar Column */}
+        <div className="space-y-6">
+          <QuickActions actions={mockQuickActions} />
+          
+          {mockActivities.length > 0 ? (
+            <RecentActivity activities={mockActivities} />
+          ) : (
+            <EmptyState 
+              title="No recent activity"
+              description="Your team's activities will appear here once things get moving."
+            />
+          )}
         </div>
       </div>
     </div>
