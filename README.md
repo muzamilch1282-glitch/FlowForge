@@ -1,41 +1,60 @@
+# FlowForge
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+FlowForge is a modern SaaS Project Management Dashboard designed for seamless team collaboration, project tracking, and workspace management.
 
-## Getting Started
+## Features
 
-First, run the development server:
+- **Projects Dashboard**: Track your active, on-hold, and completed projects with progress bars and priority badges.
+- **Workspaces**: Manage multiple workspaces and monitor their activity, project counts, and member limits.
+- **Team Management**: Invite team members, view their status, and manage their roles within the workspace.
+- **Profile Management**: Update your personal information and upload your avatar.
+- **Settings**: Configure application preferences, including appearance (Light/Dark mode), notifications, and security.
+- **Responsive Layout**: Works seamlessly across desktop and mobile devices.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS, Shadcn UI
+- **Icons**: Lucide React
+- **State Management**: Zustand
+- **Data Fetching**: React Query
+
+## Folder Structure
+
+```
+src/
+├── app/                  # Next.js app router pages and layouts
+│   └── dashboard/        # Dashboard feature routes (Projects, Workspace, Team, etc.)
+├── components/           # Reusable React components
+│   ├── dashboard/        # Feature-specific dashboard components
+│   ├── layout/           # Layout components (Sidebar, Navbar)
+│   ├── shared/           # Reusable UI elements (Button, Modal, etc.)
+│   └── ui/               # Base UI components (Shadcn)
+├── lib/                  # Utility functions
+├── hooks/                # Custom React hooks
+├── store/                # Global state (Zustand)
+└── types/                # TypeScript type definitions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd FlowForge
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Learn More
+3. Set up your environment variables (copy `.env.example` to `.env.local`).
 
-To learn more about Next.js, take a look at the following resources:
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-# FlowForge
-FlowForge – SaaS Project Management Dashboard : Developed a production-style project management platform with workspace management, drag-and-drop Kanban boards, role-based authentication, task tracking, analytics dashboards, responsive UI, and modern React architecture using Next.js, TypeScript, Tailwind CSS, Zustand, TanStack Query, and Supabase.
-
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.

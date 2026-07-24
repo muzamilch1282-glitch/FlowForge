@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Search, Command } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface SearchBarProps extends React.HTMLAttributes<HTMLButtonElement> {}
+type SearchBarProps = React.HTMLAttributes<HTMLButtonElement>;
 
 export function SearchBar({ className, ...props }: SearchBarProps) {
   return (

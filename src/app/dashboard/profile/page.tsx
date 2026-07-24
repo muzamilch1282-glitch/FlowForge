@@ -1,58 +1,130 @@
-import type { Metadata } from 'next';
-import { PageHeader } from '@/components/shared/page-header';
-import { Camera, Mail, User } from 'lucide-react';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Profile',
-};
+import { PageHeader } from '@/components/shared/page-header';
+import { Camera } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/shared/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function ProfilePage() {
+  const [profile, setProfile] = useState({
+    firstName: 'Alice',
+    lastName: 'Johnson',
+    email: 'alice@example.com',
+    role: 'Product Manager',
+    company: 'Acme Corp',
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState(profile);
+
+  const handleSave = () => {
+    setProfile(formData);
+    setIsEditing(false);
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Profile"
         description="Manage your personal information and preferences."
-      />
+      >
+        {!isEditing && (
+          <Button onClick={() => setIsEditing(true)}>
+            Edit Profile
+          </Button>
+        )}
+      </PageHeader>
 
       <div className="rounded-xl border border-border bg-card p-6">
         {/* Avatar Section */}
         <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6 pb-6 border-b border-border">
           <div className="relative group">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-2xl font-bold text-white">
-              FF
+              {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
             </div>
-            <button className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera className="h-5 w-5 text-white" />
-            </button>
+            {isEditing && (
+              <button className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera className="h-5 w-5 text-white" />
+              </button>
+            )}
           </div>
-          <div className="text-center sm:text-left">
+          <div className="text-center sm:text-left mt-2 sm:mt-0">
             <h2 className="text-xl font-semibold text-foreground">
-              FlowForge User
+              {profile.firstName} {profile.lastName}
             </h2>
-            <p className="text-sm text-muted-foreground">user@flowforge.io</p>
+            <p className="text-sm text-muted-foreground">{profile.email}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Member since January 2024
+              {profile.role} at {profile.company}
             </p>
           </div>
         </div>
 
         {/* Profile Fields */}
         <div className="pt-6 space-y-4">
-          {[
-            { label: 'Full Name', value: 'FlowForge User', icon: User },
-            { label: 'Email', value: 'user@flowforge.io', icon: Mail },
-          ].map((field) => {
-            const Icon = field.icon;
-            return (
-              <div key={field.label} className="flex items-center gap-3 rounded-lg border border-border px-4 py-3">
-                <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">{field.label}</p>
-                  <p className="text-sm font-medium text-foreground">{field.value}</p>
-                </div>
-              </div>
-            );
-          })}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                value={isEditing ? formData.firstName : profile.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                disabled={!isEditing}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                value={isEditing ? formData.lastName : profile.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                disabled={!isEditing}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={isEditing ? formData.email : profile.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                disabled={!isEditing}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Input
+                id="role"
+                value={isEditing ? formData.role : profile.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                disabled={!isEditing}
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="company">Company</Label>
+              <Input
+                id="company"
+                value={isEditing ? formData.company : profile.company}
+                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+
+          {isEditing && (
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => {
+                setFormData(profile);
+                setIsEditing(false);
+              }}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>
+                Save Changes
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
