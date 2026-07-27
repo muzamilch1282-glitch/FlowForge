@@ -2,9 +2,9 @@
 
 import React, { createContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import type { UserProfile } from '@/types/auth';
 import { getSupabaseClient } from '@/lib/supabase';
 import { authService } from '@/services/auth.service';
-import type { UserProfile } from '@/types/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -34,8 +34,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(currentSession?.user ?? null);
       
       if (currentSession?.user) {
-        const userProfile = await authService.getProfile(currentSession.user.id);
-        setProfile(userProfile);
+        try {
+          const userProfile = await authService.getProfile(currentSession.user.id);
+          setProfile(userProfile);
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+          setProfile(null);
+        }
       } else {
         setProfile(null);
       }

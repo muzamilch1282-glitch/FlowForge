@@ -49,8 +49,8 @@ export const sidebarNavigation: NavGroup[] = [
         icon: CheckSquare,
       },
       {
-        title: 'Workspace',
-        href: '/dashboard/workspace',
+        title: 'Workspaces',
+        href: '/dashboard/workspaces',
         icon: Building2,
       },
     ],

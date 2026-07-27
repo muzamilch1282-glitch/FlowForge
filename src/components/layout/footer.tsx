@@ -22,9 +22,6 @@ export function Footer() {
           >
             Terms of Service
           </a>
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            Made with <Heart className="h-3 w-3 fill-red-500 text-red-500" /> by FlowForge Team
-          </span>
         </div>
       </div>
     </footer>
