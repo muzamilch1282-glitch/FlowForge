@@ -3,9 +3,10 @@ import { Task } from '@/types/task';
 import { Project } from '@/types/project';
 import { MoreVertical, Calendar, Clock, User2 } from 'lucide-react';
 import { TaskStatus } from './task-status';
-import { TaskPriority } from './task-priority';
+import { PriorityBadge } from './priority-badge';
 import Link from 'next/link';
 import { format, parseISO, isPast, isToday } from 'date-fns';
+import { Badge } from '@/components/shared';
 
 interface TaskCardProps {
   task: Task;
@@ -52,11 +53,6 @@ export function TaskCard({ task, project, onEdit, onDelete }: TaskCardProps) {
             >
               {task.title}
             </Link>
-            {project && (
-              <span className="text-xs font-medium text-muted-foreground flex items-center">
-                Project: <Link href={`/dashboard/projects/${project.id}`} className="ml-1 hover:text-primary transition-colors">{project.title}</Link>
-              </span>
-            )}
           </div>
           
           <div className="relative">
@@ -94,7 +90,10 @@ export function TaskCard({ task, project, onEdit, onDelete }: TaskCardProps) {
         
         <div className="flex flex-wrap gap-2 mb-4">
           <TaskStatus status={task.status} />
-          <TaskPriority priority={task.priority} />
+          {project && (
+            <Badge variant="outline" className="font-normal text-muted-foreground">{project.title}</Badge>
+          )}
+          <PriorityBadge priority={task.priority} />
         </div>
       </div>
 

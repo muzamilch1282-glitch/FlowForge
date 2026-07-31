@@ -5,7 +5,7 @@ import { Task } from '@/types/task';
 import { Project } from '@/types/project';
 import { Calendar, User2 } from 'lucide-react';
 import { format, parseISO, isPast, isToday } from 'date-fns';
-import { TaskPriority } from '../task/task-priority';
+import { PriorityBadge } from '../task/priority-badge';
 import { motion } from 'framer-motion';
 
 interface KanbanTaskCardProps {
@@ -76,7 +76,7 @@ export function KanbanTaskCard({ task, project }: KanbanTaskCardProps) {
         )}
         
         <div className="mt-auto pt-2 flex items-center justify-between">
-          <TaskPriority priority={task.priority} className="text-[10px] px-1.5 py-0.5 h-5" />
+          <PriorityBadge priority={task.priority} className="text-[10px] px-1.5 py-0.5 h-5" />
           
           <div className="flex items-center gap-2">
             {dueDate && (

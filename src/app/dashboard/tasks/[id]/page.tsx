@@ -6,7 +6,7 @@ import { useTaskById } from '@/hooks/useTasks';
 import { useProjectById } from '@/hooks/useProjects';
 import { Button } from '@/components/shared';
 import { TaskStatus } from '@/components/task/task-status';
-import { TaskPriority } from '@/components/task/task-priority';
+import { PriorityBadge } from '@/components/task/priority-badge';
 import { TaskComments } from '@/components/task/task-comments';
 import { ArrowLeft, Calendar, Clock, User2, AlignLeft, Activity } from 'lucide-react';
 import { format, parseISO, isPast, isToday } from 'date-fns';
@@ -96,7 +96,7 @@ export default function TaskDetailsPage() {
               
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Priority</span>
-                <TaskPriority priority={task.priority} />
+                <PriorityBadge priority={task.priority} />
               </div>
               
               <div className="flex items-center justify-between">

@@ -5,11 +5,14 @@ import { PageHeader, Button } from '@/components/shared';
 import { Plus } from 'lucide-react';
 import { useTasks } from '@/hooks/useTasks';
 import { useProjects } from '@/hooks/useProjects';
+import { useWorkspace } from '@/hooks/useWorkspace';
 import { TaskGrid } from '@/components/task/task-grid';
 import { TaskModal } from '@/components/task/task-modal';
 import { TaskSearch } from '@/components/task/task-search';
-import { TaskFilters } from '@/components/task/task-filters';
+import { TaskFilters, TaskFilterState } from '@/components/task/task-filters';
+import { TaskSortDropdown, TaskSortOption } from '@/components/task/task-sort-dropdown';
 import { Task, CreateTaskDTO, UpdateTaskDTO } from '@/types/task';
+import { isPast, isToday, isThisWeek, parseISO } from 'date-fns';
 
 export default function TasksPage() {
   const { 
@@ -23,14 +26,28 @@ export default function TasksPage() {
   } = useTasks();
   
   const { projects, isLoading: projectsLoading } = useProjects();
+  const { workspaces, isLoading: workspacesLoading } = useWorkspace();
 
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [selectedStatus, setSelectedStatus] = React.useState('all');
-  const [selectedPriority, setSelectedPriority] = React.useState('all');
-  const [sortBy, setSortBy] = React.useState('newest');
+  
+  // Advanced Filter State
+  const [filters, setFilters] = React.useState<TaskFilterState>({
+    status: 'all',
+    priority: 'all',
+    project_id: 'all',
+    workspace_id: 'all',
+    assigned_to: 'all',
+    timing: 'all',
+  });
+
+  const [sortBy, setSortBy] = React.useState<TaskSortOption>('newest');
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingTask, setEditingTask] = React.useState<Task | null>(null);
+
+  const handleFilterChange = (key: keyof TaskFilterState, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
   // Derived state for filtering and sorting
   const filteredTasks = React.useMemo(() => {
@@ -46,11 +63,50 @@ export default function TasksPage() {
     }
 
     // Dropdown filters
-    if (selectedStatus !== 'all') {
-      result = result.filter(t => t.status === selectedStatus);
+    if (filters.status !== 'all') {
+      result = result.filter(t => t.status === filters.status);
     }
-    if (selectedPriority !== 'all') {
-      result = result.filter(t => t.priority === selectedPriority);
+    
+    if (filters.priority !== 'all') {
+      result = result.filter(t => t.priority === filters.priority);
+    }
+    
+    if (filters.project_id !== 'all') {
+      result = result.filter(t => t.project_id === filters.project_id);
+    }
+
+    if (filters.workspace_id !== 'all') {
+      // Find projects in this workspace, then filter tasks in those projects
+      const workspaceProjects = new Set(
+        projects.filter(p => p.workspace_id === filters.workspace_id).map(p => p.id)
+      );
+      result = result.filter(t => workspaceProjects.has(t.project_id));
+    }
+
+    if (filters.assigned_to !== 'all') {
+      if (filters.assigned_to === 'unassigned') {
+        result = result.filter(t => !t.assigned_to);
+      } else {
+        result = result.filter(t => !!t.assigned_to);
+      }
+    }
+
+    if (filters.timing !== 'all') {
+      result = result.filter(t => {
+        if (!t.due_date) return false;
+        const date = parseISO(t.due_date);
+        
+        switch (filters.timing) {
+          case 'overdue':
+            return isPast(date) && !isToday(date) && t.status !== 'completed';
+          case 'today':
+            return isToday(date) && t.status !== 'completed';
+          case 'week':
+            return isThisWeek(date) && t.status !== 'completed';
+          default:
+            return true;
+        }
+      });
     }
 
     // Sorting
@@ -62,7 +118,15 @@ export default function TasksPage() {
           return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         case 'alphabetical':
           return a.title.localeCompare(b.title);
-        case 'due-date':
+        case 'priority': {
+          const pOrder = { high: 3, medium: 2, low: 1 };
+          return pOrder[b.priority] - pOrder[a.priority];
+        }
+        case 'status': {
+          const sOrder = { 'todo': 1, 'in-progress': 2, 'review': 3, 'completed': 4 };
+          return sOrder[a.status] - sOrder[b.status];
+        }
+        case 'due_date':
           if (!a.due_date) return 1;
           if (!b.due_date) return -1;
           return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
@@ -72,7 +136,7 @@ export default function TasksPage() {
     });
 
     return result;
-  }, [tasks, searchQuery, selectedStatus, selectedPriority, sortBy]);
+  }, [tasks, projects, searchQuery, filters, sortBy]);
 
   const handleCreateNew = () => {
     setEditingTask(null);
@@ -104,7 +168,7 @@ export default function TasksPage() {
   };
 
   const hasProjects = projects.length > 0;
-  const isLoading = tasksLoading || projectsLoading;
+  const isLoading = tasksLoading || projectsLoading || workspacesLoading;
 
   return (
     <div className="space-y-6">
@@ -119,18 +183,22 @@ export default function TasksPage() {
       </PageHeader>
 
       <div className="flex flex-col gap-4">
-        <TaskSearch 
-          value={searchQuery} 
-          onChange={setSearchQuery} 
-          className="w-full sm:max-w-md" 
-        />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <TaskSearch 
+            value={searchQuery} 
+            onChange={setSearchQuery} 
+            className="w-full sm:max-w-xs" 
+          />
+          <div className="sm:ml-auto">
+            <TaskSortDropdown value={sortBy} onChange={setSortBy} />
+          </div>
+        </div>
+        
         <TaskFilters 
-          selectedStatus={selectedStatus}
-          onStatusChange={setSelectedStatus}
-          selectedPriority={selectedPriority}
-          onPriorityChange={setSelectedPriority}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          projects={projects}
+          workspaces={workspaces}
         />
       </div>
 

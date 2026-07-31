@@ -7,6 +7,7 @@ import { useForm } from 'react-form'; // I should use a simple react form or rea
 import { Task } from '@/types/task';
 import { Project } from '@/types/project';
 import { Button } from '@/components/shared';
+import { DueDatePicker } from './due-date-picker';
 
 interface TaskFormProps {
   task?: Task | null;
@@ -126,13 +127,11 @@ export function TaskForm({ task, projects, onSubmit, isSubmitting }: TaskFormPro
         <label className="text-sm font-medium text-foreground" htmlFor="due_date">
           Due Date
         </label>
-        <input
-          type="date"
+        <DueDatePicker
           id="due_date"
           name="due_date"
           value={formData.due_date}
-          onChange={handleChange}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          onChange={(val) => setFormData(prev => ({ ...prev, due_date: val }))}
         />
       </div>
 
