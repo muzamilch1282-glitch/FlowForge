@@ -84,7 +84,7 @@ export function ProjectOverviewCard({ project }: ProjectOverviewCardProps) {
         </div>
         
         <div className="flex -space-x-2">
-          {project.members.slice(0, 3).map((member, i) => (
+          {(project.members || []).slice(0, 3).map((member, i) => (
             <div 
               key={i} 
               className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted shadow-sm"
@@ -95,10 +95,10 @@ export function ProjectOverviewCard({ project }: ProjectOverviewCardProps) {
               </span>
             </div>
           ))}
-          {project.members.length > 3 && (
+          {(project.members || []).length > 3 && (
             <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-secondary shadow-sm">
               <span className="text-[10px] font-medium text-muted-foreground">
-                +{project.members.length - 3}
+                +{(project.members || []).length - 3}
               </span>
             </div>
           )}
