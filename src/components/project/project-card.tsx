@@ -7,6 +7,8 @@ import { Badge, Dropdown } from '@/components/shared';
 import { ProjectProgress } from './project-progress';
 import { ProjectMembers } from './project-members';
 import { format, parseISO } from 'date-fns';
+import { usePermissions } from '@/hooks/usePermissions';
+import { PERMISSIONS } from '@/lib/permissions';
 
 interface ProjectCardProps {
   project: Project;
@@ -16,6 +18,8 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, workspace, onEdit, onDelete }: ProjectCardProps) {
+  const { hasPermission } = usePermissions();
+  
   // Generate a dummy progress based on the id (deterministic)
   const dummyProgress = React.useMemo(() => {
     const sum = project.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -41,7 +45,7 @@ export function ProjectCard({ project, workspace, onEdit, onDelete }: ProjectCar
           <Link href={`/dashboard/projects/${project.id}`} className="hover:underline">
             <h3 className="font-semibold text-lg text-foreground line-clamp-1">{project.title}</h3>
           </Link>
-          <Dropdown
+        <Dropdown
             trigger={
               <button className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
                 <MoreHorizontal className="h-4 w-4" />
@@ -53,12 +57,12 @@ export function ProjectCard({ project, workspace, onEdit, onDelete }: ProjectCar
                 icon: Edit,
                 onClick: () => onEdit(project),
               },
-              {
+              ...(hasPermission(PERMISSIONS.PROJECT_DELETE) ? [{
                 label: 'Delete',
                 icon: Trash2,
                 onClick: () => onDelete(project),
                 danger: true,
-              },
+              }] : []),
             ]}
           />
         </div>

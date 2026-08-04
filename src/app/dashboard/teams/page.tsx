@@ -6,6 +6,10 @@ import { UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useWorkspace } from '@/hooks/useWorkspace';
 import { useTeam } from '@/hooks/useTeam';
+import { usePermissions } from '@/hooks/usePermissions';
+import { PERMISSIONS } from '@/lib/permissions';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { TeamMemberCard } from '@/components/team/team-member-card';
 import { InviteMemberModal } from '@/components/team/invite-member-modal';
 import { TeamSearch } from '@/components/team/team-search';
@@ -40,10 +44,7 @@ export default function TeamsPage() {
     isRemoving 
   } = useTeam(activeWorkspaceId);
 
-  const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId);
-  const isOwner = activeWorkspace?.owner_id === user?.id;
-  const currentUserMember = members.find(m => m.user_id === user?.id);
-  const isAdmin = isOwner || currentUserMember?.role === 'admin';
+  const { isAdmin, canInviteMember, isLoading: permissionsLoading } = usePermissions();
 
   // Derived state for filtered members
   const filteredMembers = React.useMemo(() => {
@@ -83,78 +84,82 @@ export default function TeamsPage() {
     });
   };
 
-  const isLoading = workspacesLoading || (teamLoading && activeWorkspaceId !== '');
+  const isLoading = workspacesLoading || (teamLoading && activeWorkspaceId !== '') || permissionsLoading;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Team Management"
-        description="Manage your team members and their roles."
-      >
-        <Button 
-          onClick={() => setIsInviteModalOpen(true)} 
-          disabled={!activeWorkspaceId || !isAdmin} 
-          className="gap-2"
+    <ProtectedRoute permission={PERMISSIONS.WORKSPACE_VIEW}>
+      <div className="space-y-6">
+        <PageHeader
+          title="Team Management"
+          description="Manage your team members and their roles."
         >
-          <UserPlus className="h-4 w-4" />
-          Invite Member
-        </Button>
-      </PageHeader>
-
-      {workspaces.length > 0 && (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 shadow-sm">
-            <span className="text-sm text-muted-foreground whitespace-nowrap">Workspace:</span>
-            <select
-              value={activeWorkspaceId}
-              onChange={(e) => setActiveWorkspaceId(e.target.value)}
-              className="bg-transparent text-sm font-medium text-foreground focus:outline-none appearance-none pr-2 cursor-pointer max-w-[200px] truncate"
+          <PermissionGuard permission={PERMISSIONS.MEMBER_INVITE}>
+            <Button 
+              onClick={() => setIsInviteModalOpen(true)} 
+              disabled={!activeWorkspaceId} 
+              className="gap-2"
             >
-              {workspaces.map(w => (
-                <option key={w.id} value={w.id}>{w.name}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="sm:ml-auto flex items-center gap-2">
-            <TeamSearch value={searchQuery} onChange={setSearchQuery} className="w-full sm:w-[250px]" />
-            <TeamFilters selectedRole={selectedRole} onRoleChange={setSelectedRole} />
-          </div>
-        </div>
-      )}
+              <UserPlus className="h-4 w-4" />
+              Invite Member
+            </Button>
+          </PermissionGuard>
+        </PageHeader>
 
-      {!workspacesLoading && workspaces.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-12 text-center">
-          <p className="text-sm text-muted-foreground">You don't belong to any workspaces yet.</p>
-        </div>
-      ) : isLoading ? (
-        <TeamSkeleton />
-      ) : filteredMembers.length > 0 ? (
-        <div className="grid gap-4">
-          {filteredMembers.map((member) => (
-            <TeamMemberCard
-              key={member.id}
-              member={member}
-              isAdmin={isAdmin}
-              isCurrentUser={member.user_id === user?.id}
-              onRemove={removeMember}
-              onUpdateRole={(id, role) => updateRole({ id, role })}
-              isProcessing={isRemoving || isUpdating}
-            />
-          ))}
-        </div>
-      ) : (
-        <EmptyMembers onInvite={() => setIsInviteModalOpen(true)} isAdmin={isAdmin} />
-      )}
+        {workspaces.length > 0 && (
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 shadow-sm">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Workspace:</span>
+              <select
+                value={activeWorkspaceId}
+                onChange={(e) => setActiveWorkspaceId(e.target.value)}
+                className="bg-transparent text-sm font-medium text-foreground focus:outline-none appearance-none pr-2 cursor-pointer max-w-[200px] truncate"
+              >
+                {workspaces.map(w => (
+                  <option key={w.id} value={w.id}>{w.name}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="sm:ml-auto flex items-center gap-2">
+              <TeamSearch value={searchQuery} onChange={setSearchQuery} className="w-full sm:w-[250px]" />
+              <TeamFilters selectedRole={selectedRole} onRoleChange={setSelectedRole} />
+            </div>
+          </div>
+        )}
 
-      <InviteMemberModal
-        isOpen={isInviteModalOpen}
-        onClose={() => setIsInviteModalOpen(false)}
-        workspaces={workspaces}
-        activeWorkspaceId={activeWorkspaceId}
-        onSubmit={handleInvite}
-        isSubmitting={isInviting}
-      />
-    </div>
+        {!workspacesLoading && workspaces.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-12 text-center">
+            <p className="text-sm text-muted-foreground">You don't belong to any workspaces yet.</p>
+          </div>
+        ) : isLoading ? (
+          <TeamSkeleton />
+        ) : filteredMembers.length > 0 ? (
+          <div className="grid gap-4">
+            {filteredMembers.map((member) => (
+              <TeamMemberCard
+                key={member.id}
+                member={member}
+                isAdmin={isAdmin()}
+                isCurrentUser={member.user_id === user?.id}
+                onRemove={removeMember}
+                onUpdateRole={(id, role) => updateRole({ id, role })}
+                isProcessing={isRemoving || isUpdating}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyMembers onInvite={() => setIsInviteModalOpen(true)} isAdmin={isAdmin()} />
+        )}
+
+        <InviteMemberModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+          workspaces={workspaces}
+          activeWorkspaceId={activeWorkspaceId}
+          onSubmit={handleInvite}
+          isSubmitting={isInviting}
+        />
+      </div>
+    </ProtectedRoute>
   );
 }

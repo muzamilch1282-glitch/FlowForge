@@ -7,6 +7,8 @@ import { PriorityBadge } from './priority-badge';
 import Link from 'next/link';
 import { format, parseISO, isPast, isToday } from 'date-fns';
 import { Badge } from '@/components/shared';
+import { usePermissions } from '@/hooks/usePermissions';
+import { PERMISSIONS } from '@/lib/permissions';
 
 interface TaskCardProps {
   task: Task;
@@ -16,6 +18,7 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, project, onEdit, onDelete }: TaskCardProps) {
+  const { hasPermission } = usePermissions();
   const [showDropdown, setShowDropdown] = React.useState(false);
 
   const toggleDropdown = (e: React.MouseEvent) => {
@@ -71,12 +74,14 @@ export function TaskCard({ task, project, onEdit, onDelete }: TaskCardProps) {
                 >
                   Edit Task
                 </button>
-                <button 
-                  onClick={handleDelete}
-                  className="flex w-full items-center px-3 py-1.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                >
-                  Delete Task
-                </button>
+                {hasPermission(PERMISSIONS.TASK_DELETE) && (
+                  <button 
+                    onClick={handleDelete}
+                    className="flex w-full items-center px-3 py-1.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    Delete Task
+                  </button>
+                )}
               </div>
             )}
           </div>
