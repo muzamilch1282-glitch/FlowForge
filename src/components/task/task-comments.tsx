@@ -1,61 +1,46 @@
 import * as React from 'react';
-import { MessageSquare, Send } from 'lucide-react';
-import { Button } from '@/components/shared';
+import { MessageSquare } from 'lucide-react';
+import { useComments } from '@/hooks/useComments';
+import { CommentList } from '../comments/CommentList';
+import { CommentForm } from '../comments/CommentForm';
 
-export function TaskComments() {
+interface TaskCommentsProps {
+  taskId: string;
+}
+
+export function TaskComments({ taskId }: TaskCommentsProps) {
+  const { 
+    comments, 
+    isLoading, 
+    createComment, 
+    isCreating, 
+    updateComment, 
+    isUpdating,
+    deleteComment
+  } = useComments(taskId);
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
+    <div className="space-y-6 flex flex-col h-full max-h-[600px]">
+      <div className="flex items-center gap-2 shrink-0">
         <MessageSquare className="h-5 w-5 text-muted-foreground" />
-        <h3 className="font-semibold text-foreground">Comments</h3>
+        <h3 className="font-semibold text-foreground">Comments ({comments.length})</h3>
       </div>
       
-      <div className="space-y-4">
-        {/* Dummy comments */}
-        <div className="flex gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-xs font-medium text-white shrink-0">
-            JD
-          </div>
-          <div className="flex-1 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">John Doe</span>
-              <span className="text-xs text-muted-foreground">2 hours ago</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              I've started working on the initial mockups. Will share them soon.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-xs font-medium text-white shrink-0">
-            AS
-          </div>
-          <div className="flex-1 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">Alice Smith</span>
-              <span className="text-xs text-muted-foreground">1 hour ago</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Great! Let me know if you need any assets for this.
-            </p>
-          </div>
-        </div>
+      <div className="flex-1 overflow-y-auto pr-2 min-h-[200px]">
+        <CommentList 
+          comments={comments} 
+          isLoading={isLoading} 
+          onEdit={(id, comment) => updateComment({ id, comment })}
+          onDelete={(id) => deleteComment(id)}
+          isUpdating={isUpdating}
+        />
       </div>
 
-      <div className="flex gap-3 pt-2 border-t border-border mt-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-medium text-white shrink-0">
-          ME
-        </div>
-        <div className="flex-1 relative">
-          <textarea
-            className="w-full resize-none rounded-md border border-input bg-background p-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary min-h-[80px]"
-            placeholder="Add a comment..."
-          />
-          <Button size="sm" className="absolute bottom-2 right-2 h-7 px-2">
-            <Send className="h-3 w-3 mr-1" /> Post
-          </Button>
-        </div>
+      <div className="pt-4 border-t border-border shrink-0 mt-auto">
+        <CommentForm 
+          onSubmit={(comment) => createComment({ comment })}
+          isSubmitting={isCreating}
+        />
       </div>
     </div>
   );

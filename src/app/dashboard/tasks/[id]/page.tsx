@@ -79,7 +79,7 @@ export default function TaskDetailsPage() {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <TaskComments />
+            <TaskComments taskId={taskId} />
           </div>
         </div>
 
