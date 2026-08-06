@@ -8,6 +8,7 @@ import { Button } from '@/components/shared';
 import { TaskStatus } from '@/components/task/task-status';
 import { PriorityBadge } from '@/components/task/priority-badge';
 import { TaskComments } from '@/components/task/task-comments';
+import { FileUpload } from '@/components/attachments/FileUpload';
 import { ArrowLeft, Calendar, Clock, User2, AlignLeft, Activity } from 'lucide-react';
 import { format, parseISO, isPast, isToday } from 'date-fns';
 import Link from 'next/link';
@@ -76,6 +77,10 @@ export default function TaskDetailsPage() {
             ) : (
               <p className="text-muted-foreground italic">No description provided.</p>
             )}
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <FileUpload taskId={taskId} />
           </div>
 
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
