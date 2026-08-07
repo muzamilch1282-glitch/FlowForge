@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Bell } from 'lucide-react';
 import { ThemeToggle, SearchBar, UserProfileDropdown, Breadcrumbs } from '@/components/shared';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { MobileSidebar } from './mobile-sidebar';
 
 export function TopNavbar() {
@@ -22,14 +23,7 @@ export function TopNavbar() {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
-        {/* Notifications */}
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-1.5 top-1.5 flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-500" />
-          </span>
-        </button>
+        <NotificationBell />
 
         {/* Theme toggle */}
         <ThemeToggle />

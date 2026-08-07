@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { TaskComment, CreateCommentDTO, UpdateCommentDTO } from '@/types/comment';
+import { activityService } from './activity.service';
+import { notificationService } from './notification.service';
 
 export const commentService = {
   async getComments(taskId: string): Promise<TaskComment[]> {
@@ -56,6 +58,41 @@ export const commentService = {
       .single();
 
     if (error) throw error;
+
+    // Log activity and notify
+    (async () => {
+      try {
+        const { data: task } = await supabase.from('tasks').select('title, project_id, assigned_to').eq('id', payload.task_id).single();
+        if (task) {
+          const { data: project } = await supabase.from('projects').select('workspace_id').eq('id', task.project_id).single();
+          if (project) {
+            await activityService.createActivity({
+              workspace_id: project.workspace_id,
+              project_id: task.project_id,
+              task_id: payload.task_id,
+              action: 'created',
+              entity_type: 'comment',
+              entity_name: `on task "${task.title}"`
+            });
+
+            // Notify assignee if it's not the comment author
+            if (task.assigned_to && task.assigned_to !== userData.user.id) {
+              await notificationService.createNotification({
+                user_id: task.assigned_to,
+                type: 'comment_added',
+                title: 'New Comment',
+                message: `New comment on task: ${task.title}`,
+                entity_type: 'task',
+                entity_id: payload.task_id
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Failed to log activity for comment creation', e);
+      }
+    })();
+
     return {
       ...data,
       profile: Array.isArray(data.profile) ? data.profile[0] : data.profile

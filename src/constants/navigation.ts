@@ -8,6 +8,7 @@ import {
   Settings,
   UserCircle,
   Bell,
+  History,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -62,6 +63,11 @@ export const sidebarNavigation: NavGroup[] = [
         title: 'Analytics',
         href: '/dashboard/analytics',
         icon: BarChart3,
+      },
+      {
+        title: 'Activity',
+        href: '/dashboard/activity',
+        icon: History,
       },
     ],
   },

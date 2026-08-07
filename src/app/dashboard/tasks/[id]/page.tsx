@@ -9,6 +9,7 @@ import { TaskStatus } from '@/components/task/task-status';
 import { PriorityBadge } from '@/components/task/priority-badge';
 import { TaskComments } from '@/components/task/task-comments';
 import { FileUpload } from '@/components/attachments/FileUpload';
+import { TaskActivity } from '@/components/task/TaskActivity';
 import { ArrowLeft, Calendar, Clock, User2, AlignLeft, Activity } from 'lucide-react';
 import { format, parseISO, isPast, isToday } from 'date-fns';
 import Link from 'next/link';
@@ -134,27 +135,7 @@ export default function TaskDetailsPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
-              <Activity className="h-5 w-5 text-muted-foreground" />
-              <h3 className="font-semibold text-foreground">Activity</h3>
-            </div>
-            
-            <div className="relative pl-4 border-l border-border space-y-6">
-              <div className="relative">
-                <div className="absolute -left-[21px] flex h-2 w-2 items-center justify-center rounded-full bg-primary mt-1.5" />
-                <p className="text-sm text-foreground">Task created</p>
-                <p className="text-xs text-muted-foreground">{format(parseISO(task.created_at), 'MMM d, yyyy h:mm a')}</p>
-              </div>
-              {task.updated_at !== task.created_at && (
-                <div className="relative">
-                  <div className="absolute -left-[21px] flex h-2 w-2 items-center justify-center rounded-full bg-muted-foreground mt-1.5" />
-                  <p className="text-sm text-foreground">Task updated</p>
-                  <p className="text-xs text-muted-foreground">{format(parseISO(task.updated_at), 'MMM d, yyyy h:mm a')}</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <TaskActivity taskId={taskId} />
         </div>
       </div>
     </div>

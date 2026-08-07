@@ -1,5 +1,6 @@
 import { Project, CreateProjectDTO, UpdateProjectDTO } from '../types/project';
 import { getSupabaseClient } from '../lib/supabase';
+import { activityService } from './activity.service';
 
 export const projectService = {
   async getProjects(): Promise<Project[]> {
@@ -49,6 +50,16 @@ export const projectService = {
       .single();
 
     if (error) throw new Error(error.message);
+
+    // Log Activity
+    activityService.createActivity({
+      workspace_id: project.workspace_id,
+      project_id: data.id,
+      action: 'created',
+      entity_type: 'project',
+      entity_name: data.title
+    }).catch(console.error);
+
     return data;
   },
 
@@ -68,16 +79,39 @@ export const projectService = {
       .single();
 
     if (error) throw new Error(error.message);
+
+    // Log Activity
+    activityService.createActivity({
+      workspace_id: data.workspace_id,
+      project_id: data.id,
+      action: 'updated',
+      entity_type: 'project',
+      entity_name: data.title
+    }).catch(console.error);
+
     return data;
   },
 
   async deleteProject(id: string): Promise<void> {
     const supabase = getSupabaseClient();
+    
+    // Fetch info before delete to log it
+    const { data: project } = await supabase.from('projects').select('*').eq('id', id).single();
+
     const { error } = await supabase
       .from('projects')
       .delete()
       .eq('id', id);
 
     if (error) throw new Error(error.message);
+
+    if (project) {
+      activityService.createActivity({
+        workspace_id: project.workspace_id,
+        action: 'deleted',
+        entity_type: 'project',
+        entity_name: project.title
+      }).catch(console.error);
+    }
   }
 };

@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { TaskAttachment, UploadResponse } from '@/types/attachment';
+import { activityService } from './activity.service';
 
 export const attachmentService = {
   async getAttachments(taskId: string): Promise<TaskAttachment[]> {
@@ -55,6 +56,29 @@ export const attachmentService = {
 
     if (dbError) throw dbError;
 
+    // Log Activity
+    (async () => {
+      try {
+        const { data: task } = await supabase.from('tasks').select('title, project_id').eq('id', taskId).single();
+        if (task) {
+          const { data: project } = await supabase.from('projects').select('workspace_id').eq('id', task.project_id).single();
+          if (project) {
+            await activityService.createActivity({
+              workspace_id: project.workspace_id,
+              project_id: task.project_id,
+              task_id: taskId,
+              action: 'uploaded',
+              entity_type: 'file',
+              entity_name: file.name,
+              details: { task_title: task.title }
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Failed to log activity for file upload', e);
+      }
+    })();
+
     const attachment = {
       ...attachmentData,
       profile: Array.isArray(attachmentData.profile) ? attachmentData.profile[0] : attachmentData.profile
@@ -73,6 +97,28 @@ export const attachmentService = {
       .eq('id', attachment.id);
 
     if (dbError) throw dbError;
+
+    // Log Activity
+    (async () => {
+      try {
+        const { data: task } = await supabase.from('tasks').select('title, project_id').eq('id', attachment.task_id).single();
+        if (task) {
+          const { data: project } = await supabase.from('projects').select('workspace_id').eq('id', task.project_id).single();
+          if (project) {
+            await activityService.createActivity({
+              workspace_id: project.workspace_id,
+              project_id: task.project_id,
+              task_id: attachment.task_id,
+              action: 'deleted',
+              entity_type: 'file',
+              entity_name: attachment.file_name
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Failed to log activity for file deletion', e);
+      }
+    })();
 
     // Delete from storage
     const { error: storageError } = await supabase.storage
