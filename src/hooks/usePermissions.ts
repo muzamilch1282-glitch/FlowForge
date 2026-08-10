@@ -7,9 +7,10 @@ import { getSupabaseClient } from '@/lib/supabase';
 import { Role, ROLES } from '@/lib/roles';
 import { PERMISSIONS, Permission, hasPermission as checkPermission } from '@/lib/permissions';
 
-export function usePermissions() {
+export function usePermissions(overrideWorkspaceId?: string) {
   const { user } = useAuth();
-  const { activeWorkspaceId } = useAppStore();
+  const { activeWorkspaceId: storedWorkspaceId } = useAppStore();
+  const activeWorkspaceId = overrideWorkspaceId || storedWorkspaceId;
   const { workspaces, isLoading: isWorkspacesLoading } = useWorkspace();
 
   const activeWorkspace = useMemo(() => 
@@ -70,8 +71,12 @@ export function usePermissions() {
     
     canCreateTask: () => hasPermission(PERMISSIONS.TASK_CREATE),
     canDeleteTask: () => hasPermission(PERMISSIONS.TASK_DELETE),
+    canComment: () => hasPermission(PERMISSIONS.TASK_COMMENT),
+    canUploadAttachment: () => hasPermission(PERMISSIONS.TASK_ATTACH),
     
     canInviteMember: () => hasPermission(PERMISSIONS.MEMBER_INVITE),
     canRemoveMember: () => hasPermission(PERMISSIONS.MEMBER_REMOVE),
+    
+    canViewActivity: () => hasPermission(PERMISSIONS.ACTIVITY_VIEW),
   };
 }

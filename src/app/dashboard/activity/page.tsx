@@ -3,10 +3,13 @@
 import * as React from 'react';
 import { ActivityTimeline } from '@/components/activity/ActivityTimeline';
 import { useWorkspaceActivity } from '@/hooks/useActivity';
-import { useWorkspaces } from '@/hooks/useWorkspaces';
+import { useWorkspace } from '@/hooks/useWorkspace';
+import { useAppStore } from '@/store/app-store';
 
 export default function ActivityPage() {
-  const { currentWorkspace } = useWorkspaces();
+  const { workspaces } = useWorkspace();
+  const { activeWorkspaceId } = useAppStore();
+  const currentWorkspace = workspaces.find(w => w.id === activeWorkspaceId);
   const { data: activities = [], isLoading } = useWorkspaceActivity(currentWorkspace?.id);
 
   return (

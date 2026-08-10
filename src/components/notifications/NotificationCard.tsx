@@ -63,7 +63,7 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
           items={[
             {
               label: 'Delete',
-              icon: Trash2,
+              icon: <Trash2 className="h-4 w-4" />,
               onClick: (e) => {
                 e.stopPropagation();
                 onDelete(notification.id);

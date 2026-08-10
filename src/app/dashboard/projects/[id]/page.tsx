@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { use } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Edit, LayoutList, Calendar, Building2 } from 'lucide-react';
+import { ArrowLeft, Edit, LayoutList, Calendar, Building2, Plus } from 'lucide-react';
 import { useProjectById } from '@/hooks/useProjects';
 import { useWorkspaceById } from '@/hooks/useWorkspace';
 import { Button, Badge } from '@/components/shared';

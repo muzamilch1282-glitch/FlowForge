@@ -52,14 +52,14 @@ export function ProjectCard({ project, workspace, onEdit, onDelete }: ProjectCar
               </button>
             }
             items={[
-              {
+              ...(hasPermission(PERMISSIONS.PROJECT_EDIT) ? [{
                 label: 'Edit Project',
-                icon: Edit,
+                icon: <Edit className="h-4 w-4" />,
                 onClick: () => onEdit(project),
-              },
+              }] : []),
               ...(hasPermission(PERMISSIONS.PROJECT_DELETE) ? [{
                 label: 'Delete',
-                icon: Trash2,
+                icon: <Trash2 className="h-4 w-4" />,
                 onClick: () => onDelete(project),
                 danger: true,
               }] : []),

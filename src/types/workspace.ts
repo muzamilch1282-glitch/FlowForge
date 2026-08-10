@@ -7,6 +7,8 @@ export interface Workspace {
   icon: string;
   created_at: string;
   updated_at: string;
+  project_count?: number;
+  member_count?: number;
 }
 
 export interface CreateWorkspaceDTO {

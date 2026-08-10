@@ -95,7 +95,7 @@ export function AttachmentCard({ attachment, publicUrl, onDownload, onDelete, is
               items={[
                 {
                   label: 'Delete File',
-                  icon: Trash2,
+                  icon: <Trash2 className="h-4 w-4" />,
                   onClick: () => onDelete(attachment),
                   danger: true,
                 }

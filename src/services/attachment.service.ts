@@ -4,21 +4,31 @@ import { activityService } from './activity.service';
 
 export const attachmentService = {
   async getAttachments(taskId: string): Promise<TaskAttachment[]> {
-    const { data, error } = await supabase
+    // 1. Fetch attachments
+    const { data: attachments, error } = await supabase
       .from('task_attachments')
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
+      .select('*')
       .eq('task_id', taskId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    
-    return data.map((attachment: any) => ({
-      ...attachment,
-      profile: Array.isArray(attachment.profile) ? attachment.profile[0] : attachment.profile
-    })) as TaskAttachment[];
+    if (!attachments || attachments.length === 0) return [];
+
+    // 2. Fetch related profiles
+    const userIds = [...new Set(attachments.map((a: any) => a.uploaded_by))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', userIds);
+
+    // 3. Manually map profiles
+    return attachments.map((attachment: any) => {
+      const profile = profiles?.find((p: any) => p.id === attachment.uploaded_by);
+      return {
+        ...attachment,
+        profile: profile || null
+      };
+    }) as TaskAttachment[];
   },
 
   async uploadFile(taskId: string, file: File): Promise<UploadResponse> {
@@ -37,7 +47,7 @@ export const attachmentService = {
 
     if (uploadError) throw uploadError;
 
-    // Save metadata to database
+    // Save metadata to database (without implicit join)
     const { data: attachmentData, error: dbError } = await supabase
       .from('task_attachments')
       .insert({
@@ -48,13 +58,17 @@ export const attachmentService = {
         file_type: file.type || 'application/octet-stream',
         uploaded_by: userData.user.id
       })
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
+      .select('*')
       .single();
 
     if (dbError) throw dbError;
+
+    // Fetch the uploader's profile manually
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userData.user.id)
+      .single();
 
     // Log Activity
     (async () => {
@@ -81,7 +95,7 @@ export const attachmentService = {
 
     const attachment = {
       ...attachmentData,
-      profile: Array.isArray(attachmentData.profile) ? attachmentData.profile[0] : attachmentData.profile
+      profile: profile || null
     } as TaskAttachment;
 
     const publicUrl = this.getPublicUrl(attachment.file_url);

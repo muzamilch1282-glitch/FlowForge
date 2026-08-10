@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Bell } from 'lucide-react';
 import { ThemeToggle, SearchBar, UserProfileDropdown, Breadcrumbs } from '@/components/shared';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { RealtimeStatus } from '@/components/realtime/RealtimeStatus';
 import { MobileSidebar } from './mobile-sidebar';
 
 export function TopNavbar() {
@@ -23,6 +24,7 @@ export function TopNavbar() {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
+        <RealtimeStatus />
         <NotificationBell />
 
         {/* Theme toggle */}

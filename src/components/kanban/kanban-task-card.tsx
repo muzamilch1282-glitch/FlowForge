@@ -7,6 +7,8 @@ import { Calendar, User2 } from 'lucide-react';
 import { format, parseISO, isPast, isToday } from 'date-fns';
 import { PriorityBadge } from '../task/priority-badge';
 import { motion } from 'framer-motion';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useAuth } from '@/hooks/useAuth';
 
 interface KanbanTaskCardProps {
   task: Task;
@@ -14,6 +16,12 @@ interface KanbanTaskCardProps {
 }
 
 export function KanbanTaskCard({ task, project }: KanbanTaskCardProps) {
+  const { isAdmin } = usePermissions();
+  const { user } = useAuth();
+  
+  // Can only drag if Admin or if explicitly assigned to this task
+  const canEdit = isAdmin() || task.assigned_to === user?.id;
+
   const {
     attributes,
     listeners,
@@ -23,6 +31,7 @@ export function KanbanTaskCard({ task, project }: KanbanTaskCardProps) {
     isDragging,
   } = useSortable({ 
     id: task.id,
+    disabled: !canEdit,
     data: {
       type: 'Task',
       task,
@@ -61,7 +70,7 @@ export function KanbanTaskCard({ task, project }: KanbanTaskCardProps) {
         style={style}
         {...attributes}
         {...listeners}
-        className="group flex cursor-grab flex-col rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md active:cursor-grabbing hover:border-primary/30 transition-colors"
+        className={`group flex flex-col rounded-lg border border-border bg-card p-4 shadow-sm transition-colors ${canEdit ? 'cursor-grab active:cursor-grabbing hover:shadow-md hover:border-primary/30' : 'cursor-not-allowed opacity-80'}`}
       >
         <div className="flex items-start justify-between mb-2 gap-2">
           <h4 className="text-sm font-semibold text-foreground line-clamp-2">

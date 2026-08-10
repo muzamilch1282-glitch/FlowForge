@@ -9,6 +9,7 @@ import { format, parseISO, isPast, isToday } from 'date-fns';
 import { Badge } from '@/components/shared';
 import { usePermissions } from '@/hooks/usePermissions';
 import { PERMISSIONS } from '@/lib/permissions';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TaskCardProps {
   task: Task;
@@ -18,7 +19,8 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, project, onEdit, onDelete }: TaskCardProps) {
-  const { hasPermission } = usePermissions();
+  const { hasPermission, isAdmin } = usePermissions();
+  const { user } = useAuth();
   const [showDropdown, setShowDropdown] = React.useState(false);
 
   const toggleDropdown = (e: React.MouseEvent) => {
@@ -68,12 +70,14 @@ export function TaskCard({ task, project, onEdit, onDelete }: TaskCardProps) {
             
             {showDropdown && (
               <div className="absolute right-0 top-full z-10 mt-1 w-36 rounded-md border border-border bg-popover py-1 shadow-lg">
-                <button 
-                  onClick={handleEdit}
-                  className="flex w-full items-center px-3 py-1.5 text-sm text-foreground hover:bg-secondary transition-colors"
-                >
-                  Edit Task
-                </button>
+                {(isAdmin() || task.assigned_to === user?.id) && (
+                  <button 
+                    onClick={handleEdit}
+                    className="flex w-full items-center px-3 py-1.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                  >
+                    Edit Task
+                  </button>
+                )}
                 {hasPermission(PERMISSIONS.TASK_DELETE) && (
                   <button 
                     onClick={handleDelete}

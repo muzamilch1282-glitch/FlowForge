@@ -13,6 +13,8 @@ import { TaskFilters, TaskFilterState } from '@/components/task/task-filters';
 import { TaskSortDropdown, TaskSortOption } from '@/components/task/task-sort-dropdown';
 import { Task, CreateTaskDTO, UpdateTaskDTO } from '@/types/task';
 import { isPast, isToday, isThisWeek, parseISO } from 'date-fns';
+import { PermissionGuard } from '@/components/auth/PermissionGuard';
+import { PERMISSIONS } from '@/lib/permissions';
 
 export default function TasksPage() {
   const { 
@@ -176,10 +178,12 @@ export default function TasksPage() {
         title="Tasks"
         description="Manage and track your individual tasks."
       >
-        <Button onClick={handleCreateNew} disabled={!hasProjects} className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Task
-        </Button>
+        <PermissionGuard permission={PERMISSIONS.TASK_CREATE}>
+          <Button onClick={handleCreateNew} disabled={!hasProjects} className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Task
+          </Button>
+        </PermissionGuard>
       </PageHeader>
 
       <div className="flex flex-col gap-4">

@@ -70,12 +70,12 @@ export function CommentCard({ comment, onEdit, onDelete, isUpdating }: CommentCa
               items={[
                 ...(isOwner ? [{
                   label: 'Edit',
-                  icon: Edit2,
+                  icon: <Edit2 className="h-4 w-4" />,
                   onClick: () => setIsEditing(true),
                 }] : []),
                 {
                   label: 'Delete',
-                  icon: Trash2,
+                  icon: <Trash2 className="h-4 w-4" />,
                   onClick: () => onDelete(comment.id),
                   danger: true,
                 }

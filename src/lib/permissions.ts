@@ -19,11 +19,15 @@ export const PERMISSIONS = {
   TASK_EDIT: 'task:edit',
   TASK_DELETE: 'task:delete',
   TASK_COMMENT: 'task:comment',
+  TASK_ATTACH: 'task:attach',
 
   // Members
   MEMBER_INVITE: 'member:invite',
   MEMBER_REMOVE: 'member:remove',
   MEMBER_UPDATE_ROLE: 'member:updateRole',
+
+  // Activity
+  ACTIVITY_VIEW: 'activity:view',
 } as const;
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
@@ -38,8 +42,10 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.WORKSPACE_VIEW,
     PERMISSIONS.PROJECT_VIEW,
     PERMISSIONS.TASK_VIEW,
-    PERMISSIONS.TASK_EDIT, // Members can edit tasks they are assigned to or have access to
+    PERMISSIONS.TASK_EDIT, // Members can edit tasks they are assigned to
     PERMISSIONS.TASK_COMMENT,
+    PERMISSIONS.TASK_ATTACH,
+    PERMISSIONS.ACTIVITY_VIEW,
   ],
 };
 

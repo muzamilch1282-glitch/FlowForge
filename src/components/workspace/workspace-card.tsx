@@ -3,6 +3,8 @@ import { MoreHorizontal, Edit, Trash2, FolderKanban, Users } from 'lucide-react'
 import { Workspace } from '@/types/workspace';
 import { Dropdown } from '@/components/shared';
 
+import { useAuth } from '@/hooks/useAuth';
+
 interface WorkspaceCardProps {
   workspace: Workspace;
   onEdit: (workspace: Workspace) => void;
@@ -10,19 +12,26 @@ interface WorkspaceCardProps {
 }
 
 export function WorkspaceCard({ workspace, onEdit, onDelete }: WorkspaceCardProps) {
-  const dropdownItems = [
-    {
-      label: 'Edit Workspace',
-      icon: <Edit className="h-4 w-4" />,
-      onClick: () => onEdit(workspace),
-    },
-    {
-      label: 'Delete Workspace',
-      icon: <Trash2 className="h-4 w-4" />,
-      onClick: () => onDelete(workspace),
-      className: 'text-destructive focus:bg-destructive/10 focus:text-destructive',
-    },
-  ];
+  const { user } = useAuth();
+  const isOwner = user?.id === workspace.owner_id;
+
+  const dropdownItems = [];
+  
+  if (isOwner) {
+    dropdownItems.push(
+      {
+        label: 'Edit Workspace',
+        icon: <Edit className="h-4 w-4" />,
+        onClick: () => onEdit(workspace),
+      },
+      {
+        label: 'Delete Workspace',
+        icon: <Trash2 className="h-4 w-4" />,
+        onClick: () => onDelete(workspace),
+        className: 'text-destructive focus:bg-destructive/10 focus:text-destructive',
+      }
+    );
+  }
 
   return (
     <div className="group relative rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md">
@@ -45,28 +54,30 @@ export function WorkspaceCard({ workspace, onEdit, onDelete }: WorkspaceCardProp
           </div>
         </div>
         
-        <div onClick={(e) => e.preventDefault()}>
-          <Dropdown
-            trigger={
-              <button className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground">
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
-            }
-            items={dropdownItems}
-            align="end"
-          />
-        </div>
+        {dropdownItems.length > 0 && (
+          <div onClick={(e) => e.preventDefault()}>
+            <Dropdown
+              trigger={
+                <button className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground">
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              }
+              items={dropdownItems}
+              align="end"
+            />
+          </div>
+        )}
       </div>
       
       <div className="mt-6 flex items-center justify-between border-t border-border pt-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <FolderKanban className="h-4 w-4" />
-            <span>0 Projects</span> {/* Mock data */}
+            <span>{workspace.project_count || 0} Project{workspace.project_count !== 1 ? 's' : ''}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Users className="h-4 w-4" />
-            <span>1 Member</span> {/* Mock data */}
+            <span>{workspace.member_count || 1} Member{workspace.member_count !== 1 ? 's' : ''}</span>
           </div>
         </div>
         <div className="text-xs">

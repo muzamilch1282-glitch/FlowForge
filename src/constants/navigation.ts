@@ -76,7 +76,7 @@ export const sidebarNavigation: NavGroup[] = [
     items: [
       {
         title: 'Members',
-        href: '/dashboard/teams',
+        href: '/dashboard/team',
         icon: Users,
       },
     ],

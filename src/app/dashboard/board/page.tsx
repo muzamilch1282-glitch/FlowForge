@@ -98,7 +98,7 @@ export default function KanbanBoardPage() {
             initialBoardState={filteredBoardState}
             columns={columns}
             projects={projects}
-            onTaskMove={moveTask}
+            onTaskMove={(id, status) => moveTask({ id, status })}
           />
         )}
       </div>

@@ -1,82 +1,149 @@
-import type { Metadata } from 'next';
-import { PageHeader } from '@/components/shared/page-header';
-import { Button } from '@/components/shared/button';
-import { TeamMemberCard, type TeamMemberCardProps } from '@/components/dashboard/team-member-card';
-import { Users, UserPlus, Search } from 'lucide-react';
-import { EmptyState } from '@/components/shared/empty-state';
-import { Input } from '@/components/ui/input';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Team | FlowForge',
-};
+import * as React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { PageHeader, Button } from '@/components/shared';
+import { UserPlus } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useWorkspace } from '@/hooks/useWorkspace';
+import { useTeam } from '@/hooks/useTeam';
+import { usePermissions } from '@/hooks/usePermissions';
+import { PERMISSIONS } from '@/lib/permissions';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { PermissionGuard } from '@/components/auth/PermissionGuard';
+import { TeamMemberCard } from '@/components/team/team-member-card';
+import { TeamSearch } from '@/components/team/team-search';
+import { TeamFilters } from '@/components/team/team-filters';
+import { EmptyMembers } from '@/components/team/empty-members';
+import { TeamSkeleton } from '@/components/team/team-skeleton';
 
-const dummyTeamMembers: TeamMemberCardProps[] = [
-  {
-    name: 'Alice Johnson',
-    role: 'Product Manager',
-    email: 'alice@example.com',
-    status: 'online',
-  },
-  {
-    name: 'Bob Smith',
-    role: 'Senior Developer',
-    email: 'bob@example.com',
-    status: 'away',
-  },
-  {
-    name: 'Charlie Davis',
-    role: 'UX Designer',
-    email: 'charlie@example.com',
-    status: 'offline',
-  },
-  {
-    name: 'Diana Prince',
-    role: 'Marketing Head',
-    email: 'diana@example.com',
-    status: 'online',
-  },
-];
+export default function TeamsPage() {
+  const { user } = useAuth();
+  const { workspaces, isLoading: workspacesLoading } = useWorkspace();
+  const [activeWorkspaceId, setActiveWorkspaceId] = React.useState('');
 
-export default function TeamPage() {
-  const hasMembers = dummyTeamMembers.length > 0;
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [selectedRole, setSelectedRole] = React.useState('all');
+  const router = useRouter();
+
+  // Auto-select first workspace if none selected
+  React.useEffect(() => {
+    if (workspaces.length > 0 && !activeWorkspaceId) {
+      setActiveWorkspaceId(workspaces[0].id);
+    }
+  }, [workspaces, activeWorkspaceId]);
+
+  const { 
+    members, 
+    isLoading: teamLoading, 
+    inviteMember, 
+    isInviting, 
+    updateRole, 
+    isUpdating, 
+    removeMember, 
+    isRemoving 
+  } = useTeam(activeWorkspaceId);
+
+  const { isAdmin, canInviteMember, isLoading: permissionsLoading } = usePermissions();
+
+  // Derived state for filtered members
+  const filteredMembers = React.useMemo(() => {
+    let result = [...members];
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(m => 
+        m.profile?.full_name.toLowerCase().includes(q) || 
+        m.profile?.email.toLowerCase().includes(q)
+      );
+    }
+
+    if (selectedRole !== 'all') {
+      result = result.filter(m => m.role === selectedRole);
+    }
+
+    // Always put current user at the top, then admins, then others
+    result.sort((a, b) => {
+      if (a.user_id === user?.id) return -1;
+      if (b.user_id === user?.id) return 1;
+      
+      const roleWeight = { admin: 2, member: 1 };
+      if (roleWeight[a.role] !== roleWeight[b.role]) {
+        return roleWeight[b.role] - roleWeight[a.role];
+      }
+      
+      return (a.profile?.full_name || '').localeCompare(b.profile?.full_name || '');
+    });
+
+    return result;
+  }, [members, searchQuery, selectedRole, user?.id]);
+
+  const isLoading = workspacesLoading || (teamLoading && activeWorkspaceId !== '') || permissionsLoading;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Team"
-        description="Manage your team members and their roles."
-      >
-        <Button className="gap-2">
-          <UserPlus className="h-4 w-4" />
-          Invite Member
-        </Button>
-      </PageHeader>
-
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input type="search" placeholder="Search members..." className="pl-8" />
-        </div>
-      </div>
-
-      {!hasMembers ? (
-        <EmptyState
-          icon={Users}
-          title="No team members"
-          description="Invite your team members to collaborate on projects together."
+    <ProtectedRoute permission={PERMISSIONS.WORKSPACE_VIEW}>
+      <div className="space-y-6">
+        <PageHeader
+          title="Team Management"
+          description="Manage your team members and their roles."
         >
-          <Button className="gap-2">
-            <UserPlus className="h-4 w-4" />
-            Invite Members
-          </Button>
-        </EmptyState>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dummyTeamMembers.map((member, i) => (
-            <TeamMemberCard key={i} {...member} />
-          ))}
-        </div>
-      )}
-    </div>
+          <PermissionGuard permission={PERMISSIONS.MEMBER_INVITE}>
+            <Link href="/dashboard/team/invite">
+              <Button disabled={!activeWorkspaceId} className="gap-2">
+                <UserPlus className="h-4 w-4" />
+                Invite Member
+              </Button>
+            </Link>
+          </PermissionGuard>
+        </PageHeader>
+
+        {workspaces.length > 0 && (
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 shadow-sm">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Workspace:</span>
+              <select
+                value={activeWorkspaceId}
+                onChange={(e) => setActiveWorkspaceId(e.target.value)}
+                className="bg-transparent text-sm font-medium text-foreground focus:outline-none appearance-none pr-2 cursor-pointer max-w-[200px] truncate"
+              >
+                {workspaces.map(w => (
+                  <option key={w.id} value={w.id}>{w.name}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="sm:ml-auto flex items-center gap-2">
+              <TeamSearch value={searchQuery} onChange={setSearchQuery} className="w-full sm:w-[250px]" />
+              <TeamFilters selectedRole={selectedRole} onRoleChange={setSelectedRole} />
+            </div>
+          </div>
+        )}
+
+        {!workspacesLoading && workspaces.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-12 text-center">
+            <p className="text-sm text-muted-foreground">You don't belong to any workspaces yet.</p>
+          </div>
+        ) : isLoading ? (
+          <TeamSkeleton />
+        ) : filteredMembers.length > 0 ? (
+          <div className="grid gap-4">
+            {filteredMembers.map((member) => (
+              <TeamMemberCard
+                key={member.id}
+                member={member}
+                isAdmin={isAdmin()}
+                isCurrentUser={member.user_id === user?.id}
+                onRemove={removeMember}
+                onUpdateRole={(id, role) => updateRole({ id, role })}
+                isProcessing={isRemoving || isUpdating}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyMembers onInvite={() => router.push('/dashboard/team/invite')} isAdmin={isAdmin()} />
+        )}
+      </div>
+    </ProtectedRoute>
   );
 }

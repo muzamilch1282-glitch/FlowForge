@@ -17,7 +17,7 @@ export const activityService = {
       });
 
     if (error) {
-      console.error('Failed to create activity log', error);
+      console.error('Failed to create activity log', error.message, error.details, error.hint);
     }
   },
 

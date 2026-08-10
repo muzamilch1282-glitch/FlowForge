@@ -10,6 +10,8 @@ import { ProjectModal } from '@/components/project/project-modal';
 import { ProjectSearch } from '@/components/project/project-search';
 import { ProjectFilters } from '@/components/project/project-filters';
 import { Project, CreateProjectDTO, UpdateProjectDTO } from '@/types/project';
+import { PermissionGuard } from '@/components/auth/PermissionGuard';
+import { PERMISSIONS } from '@/lib/permissions';
 
 export default function ProjectsPage() {
   const { 
@@ -116,10 +118,12 @@ export default function ProjectsPage() {
         title="Projects"
         description="Manage and track your projects."
       >
-        <Button onClick={handleCreateNew} disabled={!hasWorkspaces} className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Project
-        </Button>
+        <PermissionGuard permission={PERMISSIONS.PROJECT_CREATE}>
+          <Button onClick={handleCreateNew} disabled={!hasWorkspaces} className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Project
+          </Button>
+        </PermissionGuard>
       </PageHeader>
 
       <div className="flex flex-col gap-4">

@@ -11,6 +11,8 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { PERMISSIONS } from '@/lib/permissions';
 import { usePermissions } from '@/hooks/usePermissions';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import Link from 'next/link';
 
 type Section = 'General' | 'Appearance' | 'Notifications' | 'Security' | 'Account';
 
@@ -67,6 +69,27 @@ export default function SettingsPage() {
                 {section}
               </button>
             ))}
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle>Team Management</CardTitle>
+                <CardDescription>
+                  Manage your team members, roles, and permissions.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Team Members</p>
+                    <p className="text-sm text-muted-foreground">
+                      View and manage the members of your active workspace.
+                    </p>
+                  </div>
+                  <Link href="/dashboard/team">
+                    <Button variant="outline">Manage Team</Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Settings Content */}
