@@ -25,6 +25,27 @@ export const teamService = {
     })) as TeamMember[];
   },
 
+  async getAllMembers(): Promise<TeamMember[]> {
+    const { data: members, error } = await supabase
+      .from('team_members')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    if (!members || members.length === 0) return [];
+
+    const userIds = members.map(m => m.user_id);
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', userIds);
+
+    return members.map(m => ({
+      ...m,
+      profile: profiles?.find(p => p.id === m.user_id) || null
+    })) as TeamMember[];
+  },
+
   async getMemberById(id: string): Promise<TeamMember> {
     const { data: member, error } = await supabase
       .from('team_members')

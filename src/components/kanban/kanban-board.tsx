@@ -30,10 +30,12 @@ export function KanbanBoard({ initialBoardState, columns, projects, onTaskMove }
   const [boardState, setBoardState] = React.useState<BoardState>(initialBoardState);
   const [activeTask, setActiveTask] = React.useState<Task | null>(null);
 
-  // Sync with prop when server data changes
+  // Sync with prop when server data changes, but NOT while dragging
   React.useEffect(() => {
-    setBoardState(initialBoardState);
-  }, [initialBoardState]);
+    if (!activeTask) {
+      setBoardState(initialBoardState);
+    }
+  }, [initialBoardState, activeTask]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -82,6 +84,8 @@ export function KanbanBoard({ initialBoardState, columns, projects, onTaskMove }
           const activeIndex = activeItems.findIndex(t => t.id === activeId);
           const overIndex = overItems.findIndex(t => t.id === overId);
           
+          if (activeIndex === -1) return prev; // Protect against rapid re-renders
+
           // Modify active task status locally for smooth visual
           const taskToMove = { ...activeItems[activeIndex], status: overStatus };
           activeItems.splice(activeIndex, 1);
@@ -116,6 +120,9 @@ export function KanbanBoard({ initialBoardState, columns, projects, onTaskMove }
           const overItems = [...prev[overColumnId]];
           
           const activeIndex = activeItems.findIndex(t => t.id === activeId);
+          
+          if (activeIndex === -1) return prev; // Protect against rapid re-renders
+          
           const taskToMove = { ...activeItems[activeIndex], status: overColumnId };
           activeItems.splice(activeIndex, 1);
           overItems.push(taskToMove);

@@ -8,7 +8,7 @@ interface QuickActionsProps {
 
 export function QuickActions({ actions }: QuickActionsProps) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+    <div className="rounded-2xl border border-border/50 bg-card/30 backdrop-blur-md p-6 shadow-[0_4px_30px_rgba(0,0,0,0.02)] transition-all">
       <div className="mb-4">
         <h3 className="font-semibold tracking-tight text-foreground">
           Quick Actions

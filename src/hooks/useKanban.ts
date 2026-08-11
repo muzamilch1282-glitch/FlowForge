@@ -23,7 +23,14 @@ export function useKanban() {
       'completed': [],
     };
 
-    tasks.forEach((task) => {
+    // Sort tasks by created_at descending (newest first) to maintain stable order
+    const sortedTasks = [...tasks].sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return dateB - dateA;
+    });
+
+    sortedTasks.forEach((task) => {
       if (state[task.status]) {
         state[task.status].push(task);
       } else {

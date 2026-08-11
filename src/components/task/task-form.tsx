@@ -23,6 +23,7 @@ export function TaskForm({ task, projects, onSubmit, isSubmitting }: TaskFormPro
     project_id: task?.project_id || (projects.length > 0 ? projects[0].id : ''),
     status: task?.status || 'todo',
     priority: task?.priority || 'medium',
+    start_date: task?.start_date || '',
     due_date: task?.due_date || '',
   });
 
@@ -123,16 +124,30 @@ export function TaskForm({ task, projects, onSubmit, isSubmitting }: TaskFormPro
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground" htmlFor="due_date">
-          Due Date
-        </label>
-        <DueDatePicker
-          id="due_date"
-          name="due_date"
-          value={formData.due_date}
-          onChange={(val) => setFormData(prev => ({ ...prev, due_date: val }))}
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground" htmlFor="start_date">
+            Start Date
+          </label>
+          <DueDatePicker
+            id="start_date"
+            name="start_date"
+            value={formData.start_date}
+            onChange={(val) => setFormData(prev => ({ ...prev, start_date: val }))}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground" htmlFor="due_date">
+            Due Date
+          </label>
+          <DueDatePicker
+            id="due_date"
+            name="due_date"
+            value={formData.due_date}
+            onChange={(val) => setFormData(prev => ({ ...prev, due_date: val }))}
+          />
+        </div>
       </div>
 
       <div className="flex justify-end pt-4">

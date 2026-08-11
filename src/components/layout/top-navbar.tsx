@@ -27,8 +27,6 @@ export function TopNavbar() {
         <RealtimeStatus />
         <NotificationBell />
 
-        {/* Theme toggle */}
-        <ThemeToggle />
 
         {/* User Profile */}
         <div className="ml-2">

@@ -38,7 +38,7 @@ export function ProjectOverviewCard({ project }: ProjectOverviewCardProps) {
   const progress = 0;
 
   return (
-    <div className="flex flex-col rounded-xl border border-border bg-card p-5 transition-all hover:shadow-md">
+    <div className="flex flex-col rounded-2xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 group">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <Link href={`/dashboard/projects/${project.id}`} className="group flex items-center gap-2">

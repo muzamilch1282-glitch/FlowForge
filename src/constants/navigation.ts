@@ -9,6 +9,7 @@ import {
   UserCircle,
   Bell,
   History,
+  CalendarDays,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -53,6 +54,16 @@ export const sidebarNavigation: NavGroup[] = [
         title: 'Workspaces',
         href: '/dashboard/workspaces',
         icon: Building2,
+      },
+      {
+        title: 'Calendar',
+        href: '/dashboard/calendar',
+        icon: CalendarDays,
+      },
+      {
+        title: 'Timeline',
+        href: '/dashboard/timeline',
+        icon: FolderKanban,
       },
     ],
   },

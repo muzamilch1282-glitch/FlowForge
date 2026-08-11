@@ -109,28 +109,6 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
-      <div className="border-t border-border p-3">
-        <UserProfileDropdown side="right" align="end">
-          <button
-            className={cn(
-              'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              sidebarCollapsed && 'justify-center px-2'
-            )}
-          >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
-              FF
-            </div>
-            {!sidebarCollapsed && (
-              <div className="flex-1 text-left">
-                <p className="text-sm font-medium text-foreground truncate">FlowForge User</p>
-                <p className="text-xs text-muted-foreground truncate">user@flowforge.io</p>
-              </div>
-            )}
-            {!sidebarCollapsed && <ChevronsUpDown className="h-4 w-4 shrink-0" />}
-          </button>
-        </UserProfileDropdown>
-      </div>
     </aside>
   );
 }

@@ -10,6 +10,7 @@ import { PriorityBadge } from '@/components/task/priority-badge';
 import { TaskComments } from '@/components/task/task-comments';
 import { FileUpload } from '@/components/attachments/FileUpload';
 import { TaskActivity } from '@/components/task/TaskActivity';
+import { TaskDependencies } from '@/components/task/task-dependencies';
 import { ArrowLeft, Calendar, Clock, User2, AlignLeft, Activity } from 'lucide-react';
 import { format, parseISO, isPast, isToday } from 'date-fns';
 import Link from 'next/link';
@@ -133,6 +134,10 @@ export default function TaskDetailsPage() {
                 )}
               </div>
             </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <TaskDependencies taskId={taskId} projectId={task.project_id} />
           </div>
 
           <TaskActivity taskId={taskId} />
