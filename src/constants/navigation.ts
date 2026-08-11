@@ -10,6 +10,7 @@ import {
   Bell,
   History,
   CalendarDays,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -64,6 +65,11 @@ export const sidebarNavigation: NavGroup[] = [
         title: 'Timeline',
         href: '/dashboard/timeline',
         icon: FolderKanban,
+      },
+      {
+        title: 'Automations',
+        href: '/dashboard/automations',
+        icon: Zap,
       },
     ],
   },

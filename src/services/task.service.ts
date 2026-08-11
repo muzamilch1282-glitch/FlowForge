@@ -73,6 +73,24 @@ export const taskService = {
               entity_id: data.id
             });
           }
+          // --- AUTOMATION ENGINE HOOK ---
+          try {
+            const { automationService } = await import('./automation.service');
+            const { RuleEngine } = await import('../lib/rule-engine');
+            
+            const rules = await automationService.getRulesByWorkspace(project.workspace_id);
+            const session = await supabase.auth.getSession();
+            const userId = session.data.session?.user?.id || '';
+
+            await RuleEngine.evaluateAndExecute(rules, {
+              triggerType: 'task_created',
+              workspaceId: project.workspace_id,
+              userId: userId,
+              task: data,
+            });
+          } catch (e) {
+            console.error('Failed to run automations for task creation', e);
+          }
         }
       } catch (e) {
         console.error('Failed to log activity for task creation', e);
@@ -136,6 +154,35 @@ export const taskService = {
               entity_type: 'task',
               entity_id: data.id
             });
+          }
+          // --- AUTOMATION ENGINE HOOK ---
+          try {
+            const { automationService } = await import('./automation.service');
+            const { RuleEngine } = await import('../lib/rule-engine');
+            
+            const rules = await automationService.getRulesByWorkspace(project.workspace_id);
+            
+            // Check triggers based on what changed
+            const triggersToRun: string[] = [];
+            if (updates.status && updates.status !== previousTask?.status) triggersToRun.push('task_status_changed');
+            if (updates.priority && updates.priority !== previousTask?.priority) triggersToRun.push('task_priority_changed');
+            if (updates.assigned_to && updates.assigned_to !== previousTask?.assigned_to) triggersToRun.push('task_assigned');
+            if (updates.status === 'completed' && previousTask?.status !== 'completed') triggersToRun.push('task_completed');
+            
+            const session = await supabase.auth.getSession();
+            const userId = session.data.session?.user?.id || '';
+
+            for (const trigger of triggersToRun) {
+              await RuleEngine.evaluateAndExecute(rules, {
+                triggerType: trigger as any,
+                workspaceId: project.workspace_id,
+                userId: userId,
+                task: data,
+                previousTask: previousTask || undefined,
+              });
+            }
+          } catch (e) {
+            console.error('Failed to run automations for task update', e);
           }
         }
       } catch (e) {

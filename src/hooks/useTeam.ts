@@ -24,7 +24,7 @@ export function useTeam(workspaceId?: string) {
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: (data: UpdateMemberRoleDTO) => teamService.updateMemberRole(data),
+    mutationFn: (data: UpdateMemberRoleDTO) => teamService.updateMemberRole(data.id, data.role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team_members', workspaceId] });
       toast.success('Member role updated successfully');

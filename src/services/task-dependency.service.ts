@@ -121,8 +121,8 @@ export const taskDependencyService = {
           workspace_id: project.workspace_id,
           project_id: projectId,
           task_id: taskId,
-          action: 'added_dependency',
-          entity_type: 'task_dependency',
+          action: 'updated',
+          entity_type: 'task',
           entity_name: `Dependency on ${depTask.title}`
         });
       }
@@ -160,8 +160,8 @@ export const taskDependencyService = {
               workspace_id: project.workspace_id,
               project_id: task.project_id,
               task_id: depInfo.task_id,
-              action: 'removed_dependency',
-              entity_type: 'task_dependency',
+              action: 'updated',
+              entity_type: 'task',
               entity_name: 'Task Dependency'
             });
           }

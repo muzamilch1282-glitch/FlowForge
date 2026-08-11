@@ -18,7 +18,7 @@ export function FileUpload({ taskId }: FileUploadProps) {
         <h3 className="font-semibold text-foreground">Attachments</h3>
       </div>
       
-      <UploadDropzone onUpload={uploadFile} isUploading={isUploading} />
+      <UploadDropzone onUpload={async (file) => { await uploadFile(file); }} isUploading={isUploading} />
       <AttachmentList taskId={taskId} />
     </div>
   );

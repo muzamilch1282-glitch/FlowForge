@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { Logo, UserProfileDropdown } from '@/components/shared';
 import { sidebarNavigation, type NavGroup, type NavItem } from '@/constants/navigation';
 import { useAppStore } from '@/store/app-store';
+import { WorkspaceSwitcher } from './workspace-switcher';
 
 function NavItemLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
   const pathname = usePathname();
@@ -100,6 +101,11 @@ export function Sidebar() {
             <PanelLeft className="h-3 w-3" />
           </button>
         )}
+      </div>
+
+      {/* Workspace Switcher */}
+      <div className="p-3 border-b border-border">
+        <WorkspaceSwitcher collapsed={sidebarCollapsed} />
       </div>
 
       {/* Navigation */}

@@ -343,7 +343,6 @@ function GlobalSearchContent() {
                     onEdit={() => {}} 
                     onDelete={() => {}} 
                     onCreateNew={() => {}}
-                    readOnly={true}
                   />
                 </div>
               </section>

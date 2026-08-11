@@ -10,9 +10,10 @@ import * as React from 'react';
 
 interface DropdownItem {
   label: string;
-  onClick?: () => void;
+  onClick?: (e?: any) => void;
   icon?: React.ReactNode;
   disabled?: boolean;
+  danger?: boolean;
 }
 
 interface DropdownProps {
@@ -36,7 +37,12 @@ export function Dropdown({ trigger, label, items, align = 'end' }: DropdownProps
           </>
         )}
         {items.map((item, index) => (
-          <DropdownMenuItem key={index} onClick={item.onClick} disabled={item.disabled}>
+          <DropdownMenuItem 
+            key={index} 
+            onClick={item.onClick} 
+            disabled={item.disabled}
+            className={item.danger ? 'text-destructive focus:text-destructive focus:bg-destructive/10' : ''}
+          >
             {item.icon && <span className="mr-2 h-4 w-4">{item.icon}</span>}
             {item.label}
           </DropdownMenuItem>

@@ -1,5 +1,6 @@
 import { Sidebar, TopNavbar, Footer, ProtectedLayout } from '@/components/layout';
 import { RealtimeProvider } from '@/components/realtime/RealtimeProvider';
+import { AIAssistant } from '@/components/ai/ai-assistant';
 
 export default function DashboardLayout({
   children,
@@ -30,6 +31,8 @@ export default function DashboardLayout({
           <Footer />
         </div>
       </div>
+      {/* Global Slide-over AI Assistant */}
+      <AIAssistant />
     </RealtimeProvider>
   );
 }

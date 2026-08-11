@@ -11,6 +11,7 @@ export interface Task {
   assigned_to: string | null;
   start_date: string | null;
   due_date: string | null;
+  estimated_seconds: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -24,6 +25,7 @@ export interface CreateTaskDTO {
   assigned_to?: string;
   start_date?: string;
   due_date?: string;
+  estimated_seconds?: number;
 }
 
 export interface UpdateTaskDTO {
@@ -35,6 +37,7 @@ export interface UpdateTaskDTO {
   assigned_to?: string | null;
   start_date?: string | null;
   due_date?: string | null;
+  estimated_seconds?: number | null;
 }
 
 export interface TaskDependency {

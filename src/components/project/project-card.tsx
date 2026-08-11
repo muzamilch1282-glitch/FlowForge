@@ -13,8 +13,8 @@ import { PERMISSIONS } from '@/lib/permissions';
 interface ProjectCardProps {
   project: Project;
   workspace?: Workspace;
-  onEdit: (project: Project) => void;
-  onDelete: (project: Project) => void;
+  onEdit?: (project: Project) => void;
+  onDelete?: (project: Project) => void;
 }
 
 export function ProjectCard({ project, workspace, onEdit, onDelete }: ProjectCardProps) {
@@ -52,12 +52,12 @@ export function ProjectCard({ project, workspace, onEdit, onDelete }: ProjectCar
               </button>
             }
             items={[
-              ...(hasPermission(PERMISSIONS.PROJECT_EDIT) ? [{
+              ...(hasPermission(PERMISSIONS.PROJECT_EDIT) && onEdit ? [{
                 label: 'Edit Project',
                 icon: <Edit className="h-4 w-4" />,
                 onClick: () => onEdit(project),
               }] : []),
-              ...(hasPermission(PERMISSIONS.PROJECT_DELETE) ? [{
+              ...(hasPermission(PERMISSIONS.PROJECT_DELETE) && onDelete ? [{
                 label: 'Delete',
                 icon: <Trash2 className="h-4 w-4" />,
                 onClick: () => onDelete(project),

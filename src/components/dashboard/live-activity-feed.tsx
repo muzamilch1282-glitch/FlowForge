@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useWorkspaceActivity } from '@/hooks/useActivity';
 import { useWorkspace } from '@/hooks/useWorkspace';
+import { useAppStore } from '@/store';
 import { formatDistanceToNow } from 'date-fns';
 import { Activity as ActivityIcon, CheckCircle2, MessageSquare, Link2, PlusCircle, UserPlus, FileText } from 'lucide-react';
 import Link from 'next/link';
@@ -13,7 +14,9 @@ interface LiveActivityFeedProps {
 }
 
 export function LiveActivityFeed({ projects }: LiveActivityFeedProps) {
-  const { currentWorkspace } = useWorkspace();
+  const { workspaces } = useWorkspace();
+  const { activeWorkspaceId } = useAppStore();
+  const currentWorkspace = workspaces.find(w => w.id === activeWorkspaceId);
   const { data: activities = [], isLoading } = useWorkspaceActivity(currentWorkspace?.id);
 
   if (isLoading) {
@@ -90,7 +93,7 @@ export function LiveActivityFeed({ projects }: LiveActivityFeedProps) {
             <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2rem)] p-3 rounded-xl border border-border/50 bg-card hover:bg-accent/30 hover:border-border transition-colors shadow-sm">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-semibold text-foreground">
-                  {activity.user?.full_name || activity.user?.email || 'Someone'}
+                  {activity.profile?.full_name || activity.profile?.email || 'Someone'}
                 </span>
                 <time className="text-[10px] text-muted-foreground font-medium">
                   {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}

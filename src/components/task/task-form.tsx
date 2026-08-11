@@ -1,8 +1,4 @@
 import * as React from 'react';
-import { useForm } from 'react-form'; // I should use a simple react form or react-hook-form
-// Actually, I should use react-hook-form and zod based on project dependencies, or just plain React state if I want.
-// FlowForge already has react-hook-form and zod in its package.json from previous setups (usually Next.js templates with Shadcn have it).
-// Let me write a plain HTML form for simplicity to guarantee it works.
 
 import { Task } from '@/types/task';
 import { Project } from '@/types/project';

@@ -16,6 +16,11 @@ interface AppState {
   // Command palette
   commandPaletteOpen: boolean;
   setCommandPaletteOpen: (open: boolean) => void;
+
+  // AI Assistant
+  aiAssistantOpen: boolean;
+  setAiAssistantOpen: (open: boolean) => void;
+  toggleAiAssistant: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -36,6 +41,11 @@ export const useAppStore = create<AppState>()(
       // Command palette
       commandPaletteOpen: false,
       setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
+
+      // AI Assistant
+      aiAssistantOpen: false,
+      setAiAssistantOpen: (open) => set({ aiAssistantOpen: open }),
+      toggleAiAssistant: () => set((state) => ({ aiAssistantOpen: !state.aiAssistantOpen })),
     }),
     {
       name: 'flowforge-app-store',

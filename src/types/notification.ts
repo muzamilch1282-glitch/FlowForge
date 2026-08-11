@@ -1,4 +1,4 @@
-export type NotificationType = 'task_assigned' | 'comment_added' | 'due_date_reminder' | 'project_updated' | 'member_invited';
+export type NotificationType = 'task_assigned' | 'comment_added' | 'due_date_reminder' | 'project_updated' | 'member_invited' | 'system';
 export type EntityType = 'workspace' | 'project' | 'task' | 'comment' | 'file' | 'member';
 
 export interface AppNotification {

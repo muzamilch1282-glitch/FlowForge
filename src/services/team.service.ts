@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { TeamMember, InviteMemberDTO, UpdateMemberRoleDTO } from '@/types/team';
+import { TeamMember, InviteMemberDTO, UpdateMemberRoleDTO, TeamRole } from '@/types/team';
 import { notificationService } from './notification.service';
 
 export const teamService = {

@@ -34,11 +34,11 @@ export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
 
 // Map roles to their specific permissions
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
-  [ROLES.ADMIN]: [
+  admin: [
     // Admins have all permissions
     ...Object.values(PERMISSIONS)
   ],
-  [ROLES.MEMBER]: [
+  member: [
     PERMISSIONS.WORKSPACE_VIEW,
     PERMISSIONS.PROJECT_VIEW,
     PERMISSIONS.TASK_VIEW,
