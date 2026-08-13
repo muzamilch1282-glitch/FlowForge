@@ -39,7 +39,7 @@ export function MobileSidebar() {
       {/* Drawer */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-72 bg-card border-r border-border shadow-xl transition-transform duration-300 lg:hidden',
+          'fixed inset-y-0 left-0 z-50 w-72 bg-card border-r border-border/60 shadow-2xl transition-transform duration-300 lg:hidden',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -69,10 +69,10 @@ export function MobileSidebar() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                      'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                       isActive
-                        ? 'bg-violet-500/10 text-violet-700 dark:text-violet-400'
-                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
                     )}
                   >
                     <Icon className="h-4 w-4" />

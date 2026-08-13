@@ -41,10 +41,18 @@ export function TimelineBoard({ tasks, projects }: TimelineBoardProps) {
     if (t.due_date) allDates.push(parseISO(t.due_date));
   });
   
-  // Pad the timeline by 2 weeks on each side so items aren't flush against the edges
-  const minDate = subWeeks(min(allDates), 2);
-  const maxDate = addWeeks(max(allDates), 2);
+  // Align timeline boundaries to the start and end of the respective months
+  // This ensures month header columns are always wide enough to read clearly
+  const earliestDate = min(allDates);
+  const latestDate = max(allDates);
+  
+  const minDate = startOfMonth(subWeeks(earliestDate, 1));
+  const maxDate = endOfMonth(addWeeks(latestDate, 1));
   const totalDays = Math.max(differenceInDays(maxDate, minDate), 1);
+  
+  // Calculate dynamic width to prevent squishing months/tasks. 
+  // At least 15px per day, minimum 800px for the timeline part.
+  const timelineWidth = Math.max(800, totalDays * 15);
   
   const months = eachMonthOfInterval({ start: minDate, end: maxDate });
   
@@ -70,15 +78,64 @@ export function TimelineBoard({ tasks, projects }: TimelineBoardProps) {
     <div className="flex flex-col h-[calc(100vh-12rem)] min-h-[600px] bg-card border border-border rounded-xl shadow-sm overflow-hidden">
       
       {/* Scrollable Timeline Area */}
-      <div className="flex-1 overflow-auto relative">
-        <div className="min-w-[1200px] relative pb-10">
+      <div className="flex-1 overflow-auto relative scrollbar-thin">
+        <div className="relative pb-10 flex min-w-max">
           
-          {/* Header row (Months) */}
-          <div className="sticky top-0 z-20 flex bg-secondary/80 backdrop-blur-sm border-b border-border text-xs font-semibold text-muted-foreground">
-            <div className="w-[300px] shrink-0 border-r border-border p-3">
+          {/* Fixed Left Column: Projects & Tasks Container */}
+          <div className="w-[300px] shrink-0 sticky left-0 z-30 bg-card border-r border-border/60 shadow-[4px_0_12px_rgba(0,0,0,0.02)]">
+            
+            {/* Header for Left Column */}
+            <div className="sticky top-0 z-40 bg-secondary/80 backdrop-blur-sm h-10 border-b border-border flex items-center p-3 text-xs font-semibold text-muted-foreground">
               Projects & Tasks
             </div>
-            <div className="flex-1 relative h-10">
+
+            {/* Project Groups Left Panel */}
+            <div className="flex flex-col relative z-30">
+              {projects.map(project => {
+                const projectTasks = tasks.filter(t => t.project_id === project.id);
+                const completedTasks = projectTasks.filter(t => t.status === 'completed');
+                const progress = projectTasks.length > 0 
+                  ? Math.round((completedTasks.length / projectTasks.length) * 100) 
+                  : 0;
+
+                return (
+                  <div key={project.id} className="group flex flex-col border-b border-border/50 bg-card">
+                    {/* Project Row Left */}
+                    <div className="h-12 flex items-center justify-between p-3 hover:bg-secondary/10 transition-colors">
+                      <div className="font-semibold text-sm truncate pr-2" title={project.title}>
+                        {project.title}
+                      </div>
+                      <div className="text-xs text-muted-foreground font-medium">
+                        {progress}%
+                      </div>
+                    </div>
+
+                    {/* Task Rows Left */}
+                    {projectTasks.map(task => {
+                      const tStart = task.start_date ? parseISO(task.start_date) : (task.due_date ? parseISO(task.due_date) : today);
+                      const tEnd = task.due_date ? parseISO(task.due_date) : tStart;
+                      const isOverdue = isBefore(tEnd, today) && task.status !== 'completed';
+
+                      return (
+                        <div key={task.id} className="h-10 flex items-center p-2 pl-8 gap-2 hover:bg-secondary/20 transition-colors">
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${task.status === 'completed' ? 'bg-gray-400' : isOverdue ? 'bg-destructive' : 'bg-blue-500'}`} />
+                          <Link href={`/dashboard/tasks/${task.id}`} className="text-xs truncate hover:underline" title={task.title}>
+                            {task.title}
+                          </Link>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Column: Scrollable Timeline Grid */}
+          <div className="flex-1 relative" style={{ minWidth: `${timelineWidth}px` }}>
+            
+            {/* Header row (Months) */}
+            <div className="sticky top-0 z-20 h-10 bg-secondary/80 backdrop-blur-sm border-b border-border text-xs font-semibold text-muted-foreground relative">
               {months.map(month => {
                 const monthStart = startOfMonth(month);
                 const monthEnd = endOfMonth(month);
@@ -97,53 +154,43 @@ export function TimelineBoard({ tasks, projects }: TimelineBoardProps) {
                 );
               })}
             </div>
-          </div>
 
-          {/* Today Indicator Line */}
-          <div 
-            className="absolute top-0 bottom-0 border-l-2 border-primary/50 z-10 pointer-events-none"
-            style={{ left: `calc(300px + ${todayStyle.left})` }}
-          >
-            <div className="absolute -top-1 -left-1.5 w-3 h-3 rounded-full bg-primary" />
-          </div>
+            {/* Today Indicator Line */}
+            <div 
+              className="absolute top-0 bottom-0 border-l-2 border-primary/50 z-10 pointer-events-none"
+              style={{ left: todayStyle.left }}
+            >
+              <div className="absolute -top-1 -left-1.5 w-3 h-3 rounded-full bg-primary" />
+            </div>
 
-          {/* Project Groups */}
-          <div className="flex flex-col relative z-10">
-            {projects.map(project => {
-              const projectTasks = tasks.filter(t => t.project_id === project.id);
-              const completedTasks = projectTasks.filter(t => t.status === 'completed');
-              const progress = projectTasks.length > 0 
-                ? Math.round((completedTasks.length / projectTasks.length) * 100) 
-                : 0;
+            {/* Timeline Bars */}
+            <div className="flex flex-col relative z-10">
+              {projects.map(project => {
+                const projectTasks = tasks.filter(t => t.project_id === project.id);
+                const completedTasks = projectTasks.filter(t => t.status === 'completed');
+                const progress = projectTasks.length > 0 
+                  ? Math.round((completedTasks.length / projectTasks.length) * 100) 
+                  : 0;
 
-              let pStart = project.start_date ? parseISO(project.start_date) : today;
-              let pEnd = project.end_date ? parseISO(project.end_date) : today;
-              
-              // If project lacks dates, infer from tasks
-              if (!project.start_date && projectTasks.length > 0) {
-                const taskDates = projectTasks.map(t => t.start_date ? parseISO(t.start_date) : (t.due_date ? parseISO(t.due_date) : today));
-                pStart = min(taskDates);
-              }
-              if (!project.end_date && projectTasks.length > 0) {
-                const taskDates = projectTasks.map(t => t.due_date ? parseISO(t.due_date) : (t.start_date ? parseISO(t.start_date) : today));
-                pEnd = max(taskDates);
-              }
+                let pStart = project.start_date ? parseISO(project.start_date) : today;
+                let pEnd = project.end_date ? parseISO(project.end_date) : today;
+                
+                // If project lacks dates, infer from tasks
+                if (!project.start_date && projectTasks.length > 0) {
+                  const taskDates = projectTasks.map(t => t.start_date ? parseISO(t.start_date) : (t.due_date ? parseISO(t.due_date) : today));
+                  pStart = min(taskDates);
+                }
+                if (!project.end_date && projectTasks.length > 0) {
+                  const taskDates = projectTasks.map(t => t.due_date ? parseISO(t.due_date) : (t.start_date ? parseISO(t.start_date) : today));
+                  pEnd = max(taskDates);
+                }
 
-              const projectStyle = getStyleProps(pStart, pEnd);
+                const projectStyle = getStyleProps(pStart, pEnd);
 
-              return (
-                <div key={project.id} className="group flex flex-col border-b border-border/50">
-                  {/* Project Row */}
-                  <div className="flex items-center hover:bg-secondary/10 transition-colors">
-                    <div className="w-[300px] shrink-0 border-r border-border p-3 flex items-center justify-between bg-card z-20">
-                      <div className="font-semibold text-sm truncate pr-2" title={project.title}>
-                        {project.title}
-                      </div>
-                      <div className="text-xs text-muted-foreground font-medium">
-                        {progress}%
-                      </div>
-                    </div>
-                    <div className="flex-1 relative h-12 flex items-center">
+                return (
+                  <div key={project.id} className="group flex flex-col border-b border-border/50">
+                    {/* Project Bar Row */}
+                    <div className="h-12 flex items-center relative hover:bg-secondary/10 transition-colors">
                       <div 
                         className="absolute h-6 bg-secondary rounded-md border border-border/50 overflow-hidden"
                         style={projectStyle}
@@ -155,9 +202,8 @@ export function TimelineBoard({ tasks, projects }: TimelineBoardProps) {
                         />
                       </div>
                     </div>
-                  </div>
 
-                  {/* Task Rows */}
+                  {/* Task Rows Right (Timeline Bars Only) */}
                   {projectTasks.map(task => {
                     const tStart = task.start_date ? parseISO(task.start_date) : (task.due_date ? parseISO(task.due_date) : today);
                     const tEnd = task.due_date ? parseISO(task.due_date) : tStart;
@@ -173,25 +219,15 @@ export function TimelineBoard({ tasks, projects }: TimelineBoardProps) {
                     }
 
                     return (
-                      <div key={task.id} className="flex items-center hover:bg-secondary/20 transition-colors">
-                        <div className="w-[300px] shrink-0 border-r border-border p-2 pl-8 flex items-center gap-2 bg-card z-20">
-                          <div className={`w-2 h-2 rounded-full shrink-0 ${task.status === 'completed' ? 'bg-gray-400' : isOverdue ? 'bg-destructive' : 'bg-blue-500'}`} />
-                          <Link href={`/dashboard/tasks/${task.id}`} className="text-xs truncate hover:underline" title={task.title}>
-                            {task.title}
-                          </Link>
-                        </div>
-                        <div className="flex-1 relative h-10 flex items-center group-hover:bg-background/5">
-                          {/* Background grid lines can go here if needed */}
-                          
-                          <Link 
-                            href={`/dashboard/tasks/${task.id}`}
-                            className={`absolute h-5 rounded-sm border shadow-sm flex items-center px-2 text-[10px] font-medium truncate hover:opacity-80 transition-opacity ${barColor}`}
-                            style={taskStyle}
-                            title={`${task.title} | ${format(tStart, 'MMM d')} - ${format(tEnd, 'MMM d')}`}
-                          >
-                            <span className="truncate">{task.title}</span>
-                          </Link>
-                        </div>
+                      <div key={task.id} className="h-10 flex items-center relative group-hover:bg-background/5 hover:bg-secondary/10 transition-colors">
+                        <Link 
+                          href={`/dashboard/tasks/${task.id}`}
+                          className={`absolute h-5 rounded-sm border shadow-sm flex items-center px-2 text-[10px] font-medium truncate hover:opacity-80 transition-opacity ${barColor}`}
+                          style={taskStyle}
+                          title={`${task.title} | ${format(tStart, 'MMM d')} - ${format(tEnd, 'MMM d')}`}
+                        >
+                          <span className="truncate">{task.title}</span>
+                        </Link>
                       </div>
                     );
                   })}
@@ -200,6 +236,7 @@ export function TimelineBoard({ tasks, projects }: TimelineBoardProps) {
             })}
           </div>
 
+          </div>
         </div>
       </div>
     </div>

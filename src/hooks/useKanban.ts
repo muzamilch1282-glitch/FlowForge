@@ -17,6 +17,7 @@ export function useKanban() {
   // Group tasks by status
   const boardState = React.useMemo(() => {
     const state: BoardState = {
+      'backlog': [],
       'todo': [],
       'in-progress': [],
       'review': [],

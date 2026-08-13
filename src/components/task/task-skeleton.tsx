@@ -2,7 +2,7 @@ import * as React from 'react';
 
 export function TaskSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 animate-in fade-in duration-500">
       {[...Array(6)].map((_, i) => (
         <div key={i} className="flex flex-col rounded-lg border border-border bg-card p-4 shadow-sm animate-pulse">
           <div className="flex items-start justify-between mb-3">

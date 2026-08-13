@@ -1,36 +1,26 @@
 'use client';
 
 import * as React from 'react';
-import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  Settings,
   UserCircle,
-  Shield,
-  Bell,
-  Palette,
-  Lock,
-  Zap,
-  Sparkles,
   Building2,
   Users,
+  Bell,
+  Palette,
+  Shield,
+  Blocks,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/shared/page-header';
-import { usePermissions } from '@/hooks/usePermissions';
-import { PermissionGuard } from '@/components/auth/PermissionGuard';
-import { PERMISSIONS } from '@/lib/permissions';
 
 // Settings section components
 import { ProfileSettings } from '@/components/settings/profile-settings';
-import { AccountSettings } from '@/components/settings/account-settings';
-import { WorkspaceSettings } from '@/components/settings/workspace-settings';
-import { MembersSettings } from '@/components/settings/members-settings';
 import { NotificationSettings } from '@/components/settings/notification-settings';
 import { AppearanceSettings } from '@/components/settings/appearance-settings';
 import { SecuritySettings } from '@/components/settings/security-settings';
-import { AutomationSettings } from '@/components/settings/automation-settings';
-import { AISettings } from '@/components/settings/ai-settings';
 
 // ─── Section Configuration ──────────────────────────────────
 
@@ -39,102 +29,41 @@ interface SettingsSection {
   label: string;
   icon: LucideIcon;
   description: string;
-  requiresPermission?: string;
-  category: 'personal' | 'workspace';
 }
 
 const SETTINGS_SECTIONS: SettingsSection[] = [
-  // Personal settings — accessible to all authenticated users
-  {
-    id: 'profile',
-    label: 'Profile',
-    icon: UserCircle,
-    description: 'Manage your personal information',
-    category: 'personal',
-  },
-  {
-    id: 'account',
-    label: 'Account',
-    icon: Shield,
-    description: 'Account details and sign out',
-    category: 'personal',
-  },
-  {
-    id: 'appearance',
-    label: 'Appearance',
-    icon: Palette,
-    description: 'Theme and display preferences',
-    category: 'personal',
-  },
-  {
-    id: 'notifications',
-    label: 'Notifications',
-    icon: Bell,
-    description: 'Manage notification preferences',
-    category: 'personal',
-  },
-  {
-    id: 'security',
-    label: 'Security',
-    icon: Lock,
-    description: 'Password and authentication',
-    category: 'personal',
-  },
-  {
-    id: 'ai',
-    label: 'AI Settings',
-    icon: Sparkles,
-    description: 'Configure AI assistant preferences',
-    category: 'personal',
-  },
-  // Workspace settings — admin/owner only for editing, viewable by members
-  {
-    id: 'workspace',
-    label: 'Workspace',
-    icon: Building2,
-    description: 'Workspace configuration',
-    category: 'workspace',
-  },
-  {
-    id: 'members',
-    label: 'Members & Roles',
-    icon: Users,
-    description: 'Manage team members',
-    category: 'workspace',
-  },
-  {
-    id: 'automations',
-    label: 'Automations',
-    icon: Zap,
-    description: 'Workflow automation rules',
-    category: 'workspace',
-  },
+  { id: 'profile', label: 'Profile', icon: UserCircle, description: 'Manage your personal information' },
+  { id: 'workspace', label: 'Workspace', icon: Building2, description: 'Workspace configuration' },
+  { id: 'team', label: 'Team', icon: Users, description: 'Manage team members' },
+  { id: 'notifications', label: 'Notifications', icon: Bell, description: 'Manage notification preferences' },
+  { id: 'appearance', label: 'Appearance', icon: Palette, description: 'Theme and display preferences' },
+  { id: 'security', label: 'Security', icon: Shield, description: 'Password and authentication' },
 ];
 
 // ─── Section Content Renderer ────────────────────────────────
 
 function SettingsContent({ sectionId }: { sectionId: string }) {
   switch (sectionId) {
-    case 'profile':
-      return <ProfileSettings />;
-    case 'account':
-      return <AccountSettings />;
-    case 'workspace':
-      return <WorkspaceSettings />;
-    case 'members':
-      return <MembersSettings />;
-    case 'notifications':
-      return <NotificationSettings />;
-    case 'appearance':
-      return <AppearanceSettings />;
-    case 'security':
-      return <SecuritySettings />;
-    case 'automations':
-      return <AutomationSettings />;
-    case 'ai':
-      return <AISettings />;
+    case 'profile': return <ProfileSettings />;
+    case 'notifications': return <NotificationSettings />;
+    case 'appearance': return <AppearanceSettings />;
+    case 'security': return <SecuritySettings />;
+    case 'team': 
+      return (
+        <div className="flex flex-col items-start space-y-4">
+          <p className="text-sm text-muted-foreground">Team management is handled in the dedicated Team section.</p>
+          <a href="/dashboard/team" className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90">
+            Go to Team Management
+          </a>
+        </div>
+      );
     default:
-      return <ProfileSettings />;
+      return (
+        <div className="flex h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card/30">
+          <h3 className="text-lg font-medium text-foreground capitalize">{sectionId} Settings</h3>
+          <p className="text-sm text-muted-foreground mt-1">This section is currently under construction.</p>
+        </div>
+      );
   }
 }
 
@@ -142,11 +71,7 @@ function SettingsContent({ sectionId }: { sectionId: string }) {
 
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = React.useState('profile');
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(true);
-  const { hasPermission } = usePermissions();
-
-  const personalSections = SETTINGS_SECTIONS.filter((s) => s.category === 'personal');
-  const workspaceSections = SETTINGS_SECTIONS.filter((s) => s.category === 'workspace');
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const activeConfig = SETTINGS_SECTIONS.find((s) => s.id === activeSection);
 
@@ -156,18 +81,19 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 max-w-5xl mx-auto pb-12 animate-in fade-in duration-500">
       <PageHeader
         title="Settings"
-        description="Manage your account, workspace, and application preferences."
+        description="Manage your account and application preferences."
       />
 
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col md:flex-row gap-8">
+        
         {/* ─── Sidebar Navigation ─────────────────────────── */}
-        <div className="w-full lg:w-64 shrink-0">
+        <div className="w-full md:w-64 shrink-0">
           {/* Mobile toggle */}
           <button
-            className="flex lg:hidden w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium mb-4"
+            className="flex md:hidden w-full items-center justify-between rounded-xl border border-border/60 bg-card px-4 py-3 text-sm font-medium mb-4"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <span className="flex items-center gap-2">
@@ -175,86 +101,40 @@ export default function SettingsPage() {
               {activeConfig?.label || 'Settings'}
             </span>
             <svg
-              className={cn('h-4 w-4 transition-transform', mobileMenuOpen && 'rotate-180')}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+              className={cn('h-4 w-4 transition-transform text-muted-foreground', mobileMenuOpen && 'rotate-180')}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
 
-          <nav
-            className={cn(
-              'space-y-6 lg:block',
-              mobileMenuOpen ? 'block' : 'hidden'
-            )}
-          >
-            {/* Personal Settings */}
-            <div className="space-y-1">
-              <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-2">
-                Personal
-              </p>
-              {personalSections.map((section) => {
-                const Icon = section.icon;
-                const isActive = activeSection === section.id;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => handleSectionClick(section.id)}
-                    className={cn(
-                      'group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                      isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
-                    )}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="settings-active-indicator"
-                        className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-primary"
-                        transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
-                      />
-                    )}
-                    <Icon className={cn('h-4 w-4 shrink-0', isActive && 'text-primary')} />
-                    <span className="truncate">{section.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Workspace Settings */}
-            <div className="space-y-1">
-              <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-2">
-                Workspace
-              </p>
-              {workspaceSections.map((section) => {
-                const Icon = section.icon;
-                const isActive = activeSection === section.id;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => handleSectionClick(section.id)}
-                    className={cn(
-                      'group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                      isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
-                    )}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="settings-active-indicator"
-                        className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-primary"
-                        transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
-                      />
-                    )}
-                    <Icon className={cn('h-4 w-4 shrink-0', isActive && 'text-primary')} />
-                    <span className="truncate">{section.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+          <nav className={cn('space-y-1', mobileMenuOpen ? 'block' : 'hidden md:block')}>
+            {SETTINGS_SECTIONS.map((section) => {
+              const Icon = section.icon;
+              const isActive = activeSection === section.id;
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => handleSectionClick(section.id)}
+                  className={cn(
+                    'group relative flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200',
+                    isActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
+                  )}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="settings-active-indicator"
+                      className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full bg-primary"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                    />
+                  )}
+                  <Icon className={cn('h-4 w-4 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
+                  <span className="truncate">{section.label}</span>
+                </button>
+              );
+            })}
           </nav>
         </div>
 
@@ -263,15 +143,20 @@ export default function SettingsPage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
               transition={{ duration: 0.2, ease: 'easeInOut' }}
             >
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-foreground tracking-tight">{activeConfig?.label}</h2>
+                <p className="text-sm text-muted-foreground mt-1">{activeConfig?.description}</p>
+              </div>
               <SettingsContent sectionId={activeSection} />
             </motion.div>
           </AnimatePresence>
         </div>
+        
       </div>
     </div>
   );

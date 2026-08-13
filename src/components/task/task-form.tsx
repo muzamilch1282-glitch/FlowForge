@@ -4,6 +4,7 @@ import { Task } from '@/types/task';
 import { Project } from '@/types/project';
 import { Button } from '@/components/shared';
 import { DueDatePicker } from './due-date-picker';
+import { useTeam } from '@/hooks/useTeam';
 
 interface TaskFormProps {
   task?: Task | null;
@@ -19,9 +20,13 @@ export function TaskForm({ task, projects, onSubmit, isSubmitting }: TaskFormPro
     project_id: task?.project_id || (projects.length > 0 ? projects[0].id : ''),
     status: task?.status || 'todo',
     priority: task?.priority || 'medium',
+    assigned_to: task?.assigned_to || '',
     start_date: task?.start_date || '',
     due_date: task?.due_date || '',
   });
+
+  const selectedProject = projects.find(p => p.id === formData.project_id);
+  const { members } = useTeam(selectedProject?.workspace_id);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -30,7 +35,14 @@ export function TaskForm({ task, projects, onSubmit, isSubmitting }: TaskFormPro
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    // If assigned_to or dates are empty strings, convert them to null before submitting
+    const submitData = {
+      ...formData,
+      assigned_to: formData.assigned_to === '' ? null : formData.assigned_to,
+      start_date: formData.start_date === '' ? null : formData.start_date,
+      due_date: formData.due_date === '' ? null : formData.due_date,
+    };
+    onSubmit(submitData);
   };
 
   return (
@@ -50,22 +62,44 @@ export function TaskForm({ task, projects, onSubmit, isSubmitting }: TaskFormPro
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground" htmlFor="project_id">
-          Project <span className="text-destructive">*</span>
-        </label>
-        <select
-          id="project_id"
-          name="project_id"
-          required
-          value={formData.project_id}
-          onChange={handleChange}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-        >
-          {projects.map(p => (
-            <option key={p.id} value={p.id}>{p.title}</option>
-          ))}
-        </select>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground" htmlFor="project_id">
+            Project <span className="text-destructive">*</span>
+          </label>
+          <select
+            id="project_id"
+            name="project_id"
+            required
+            value={formData.project_id}
+            onChange={handleChange}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            {projects.map(p => (
+              <option key={p.id} value={p.id}>{p.title}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground" htmlFor="assigned_to">
+            Assignee
+          </label>
+          <select
+            id="assigned_to"
+            name="assigned_to"
+            value={formData.assigned_to}
+            onChange={handleChange}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            <option value="">Unassigned</option>
+            {members?.map(member => (
+              <option key={member.id} value={member.user_id}>
+                {member.profile?.full_name || member.user_id}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="space-y-2">

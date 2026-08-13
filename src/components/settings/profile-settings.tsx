@@ -1,187 +1,170 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { settingsService } from '@/services/settings.service';
+import { Button } from '@/components/shared';
+import { Camera, User2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription, 
-  CardContent, 
-  CardFooter 
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { authService } from '@/services/auth.service';
+import { useRouter } from 'next/navigation';
 
 export function ProfileSettings() {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { user, profile } = useAuth();
+  const router = useRouter();
   
-  const [formData, setFormData] = useState({
-    fullName: '',
-    avatarUrl: ''
-  });
+  const [name, setName] = React.useState(profile?.full_name || 'Alex Johnson');
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [avatarPreview, setAvatarPreview] = React.useState<string | null>(profile?.avatar_url || null);
+  const [avatarBase64, setAvatarBase64] = React.useState<string | null>(null);
   
-  const [isDirty, setIsDirty] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile', user?.id],
-    queryFn: () => settingsService.getProfile(user!.id),
-    enabled: !!user?.id,
-  });
-
-  useEffect(() => {
-    if (profile) {
-      setFormData({
-        fullName: profile.full_name || '',
-        avatarUrl: profile.avatar_url || ''
-      });
-      setIsDirty(false);
-    }
+  // Initialize from profile when it loads
+  React.useEffect(() => {
+    if (profile?.full_name) setName(profile.full_name);
+    if (profile?.avatar_url) setAvatarPreview(profile.avatar_url);
   }, [profile]);
 
-  const updateProfileMutation = useMutation({
-    mutationFn: (data: { full_name: string; avatar_url: string }) => 
-      settingsService.updateProfile(user!.id, data),
-    onSuccess: () => {
-      toast.success('Profile updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
-      setIsDirty(false);
-    },
-    onError: (error: any) => {
-      console.error("Profile Save Error:", JSON.stringify(error, null, 2), error.message, error);
-      toast.error(error.message || 'Failed to update profile');
-    }
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     
-    // Check if dirty
-    if (profile) {
-      setIsDirty(
-        value !== (name === 'fullName' ? profile.full_name : profile.avatar_url)
-      );
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('File size must be less than 2MB');
+      return;
     }
+    
+    // Read file as base64 to save directly in the profile table (prototype approach)
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setAvatarPreview(base64);
+      setAvatarBase64(base64);
+      toast.success('Avatar selected. Save changes to apply.');
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleCancel = () => {
-    if (profile) {
-      setFormData({
-        fullName: profile.full_name || '',
-        avatarUrl: profile.avatar_url || ''
+  const handleSave = async () => {
+    if (!name.trim()) {
+      toast.error('Name cannot be empty');
+      return;
+    }
+    
+    if (!user) {
+      toast.error('You must be logged in to save');
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      await authService.updateProfile(user.id, {
+        full_name: name,
+        ...(avatarBase64 && { avatar_url: avatarBase64 })
       });
-      setIsDirty(false);
+      toast.success('Profile updated successfully!');
+      
+      // Refresh to update server components and layout with new avatar/name
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || 'Failed to update profile');
+    } finally {
+      setIsSaving(false);
     }
   };
-
-  const handleSave = () => {
-    updateProfileMutation.mutate({
-      full_name: formData.fullName,
-      avatar_url: formData.avatarUrl
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="h-6 w-32 bg-muted animate-pulse rounded"></div>
-          <div className="h-4 w-64 bg-muted animate-pulse rounded mt-2"></div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="h-20 w-20 bg-muted animate-pulse rounded-full"></div>
-            <div className="flex-1 space-y-2">
-              <div className="h-4 w-24 bg-muted animate-pulse rounded"></div>
-              <div className="h-10 w-full bg-muted animate-pulse rounded"></div>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="h-4 w-24 bg-muted animate-pulse rounded"></div>
-            <div className="h-10 w-full bg-muted animate-pulse rounded"></div>
-          </div>
-          <div className="space-y-2">
-            <div className="h-4 w-24 bg-muted animate-pulse rounded"></div>
-            <div className="h-10 w-full bg-muted animate-pulse rounded"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const userInitials = formData.fullName
-    ? formData.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
-    : 'U';
-
+  
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Profile Settings</CardTitle>
-        <CardDescription>Manage your personal information and how others see you.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="space-y-6">
+      <div className="p-6 rounded-xl border border-border/60 bg-card shadow-sm space-y-6">
+        <h3 className="text-sm font-semibold text-foreground border-b border-border/60 pb-3">Avatar</h3>
+        
         <div className="flex items-center gap-6">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={formData.avatarUrl} alt={formData.fullName} />
-            <AvatarFallback className="text-2xl">{userInitials}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 space-y-2">
-            <Label htmlFor="avatarUrl">Avatar URL</Label>
-            <Input 
-              id="avatarUrl" 
-              name="avatarUrl"
-              placeholder="https://example.com/avatar.jpg"
-              value={formData.avatarUrl}
-              onChange={handleChange}
+          <div className="relative group">
+            <div className="h-24 w-24 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center overflow-hidden">
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarPreview} alt="Avatar preview" className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-3xl font-bold text-primary uppercase">
+                  {user?.email?.substring(0, 2) || 'FL'}
+                </span>
+              )}
+            </div>
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-background border border-border shadow-sm flex items-center justify-center text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+            >
+              <Camera className="h-4 w-4" />
+            </button>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">Upload a new photo</p>
+            <p className="text-xs text-muted-foreground mt-1 mb-3">JPG, GIF or PNG. Max size of 2MB.</p>
+            
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileChange} 
+              accept="image/png, image/jpeg, image/gif" 
+              className="hidden" 
+            />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8" 
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Choose File
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 rounded-xl border border-border/60 bg-card shadow-sm space-y-6">
+        <h3 className="text-sm font-semibold text-foreground border-b border-border/60 pb-3">Personal Information</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Full Name</label>
+            <input 
+              type="text" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full h-10 px-3 rounded-lg border border-border/60 bg-background text-sm text-foreground focus:ring-1 focus:ring-primary/50 outline-none transition-all"
             />
           </div>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email Address</label>
+            <input 
+              type="email" 
+              defaultValue={user?.email || 'alex@example.com'} 
+              className="w-full h-10 px-3 rounded-lg border border-border/60 bg-background text-sm text-muted-foreground cursor-not-allowed opacity-80 outline-none"
+              disabled
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">To change your email, please contact support.</p>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Role</label>
+            <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-border/60 bg-secondary/30 text-sm text-foreground">
+              <User2 className="h-4 w-4 text-muted-foreground" />
+              {/* @ts-ignore - Supabase user roles typically reside inside app_metadata */}
+              {user?.app_metadata?.role || user?.role || 'Admin'}
+            </div>
+          </div>
         </div>
         
-        <div className="space-y-2">
-          <Label htmlFor="fullName">Full Name</Label>
-          <Input 
-            id="fullName" 
-            name="fullName"
-            placeholder="Jane Doe"
-            value={formData.fullName}
-            onChange={handleChange}
-          />
+        <div className="pt-4 border-t border-border/40 flex justify-end">
+          <Button 
+            className="px-6 rounded-full font-medium" 
+            onClick={handleSave} 
+            disabled={isSaving}
+          >
+            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input 
-            id="email" 
-            name="email"
-            value={profile?.email || user?.email || ''}
-            disabled
-            className="bg-muted/50 text-muted-foreground"
-          />
-          <p className="text-xs text-muted-foreground">Your email address is managed through your authentication provider.</p>
-        </div>
-      </CardContent>
-      <CardFooter className="flex justify-end gap-2 border-t pt-6">
-        <Button 
-          variant="outline" 
-          onClick={handleCancel}
-          disabled={!isDirty || updateProfileMutation.isPending}
-        >
-          Cancel
-        </Button>
-        <Button 
-          onClick={handleSave}
-          disabled={!isDirty || updateProfileMutation.isPending}
-        >
-          {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
-        </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 }

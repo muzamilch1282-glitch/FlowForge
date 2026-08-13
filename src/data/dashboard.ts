@@ -201,9 +201,9 @@ export const mockQuickActions: QuickAction[] = [
   },
   {
     id: 'qa4',
-    label: 'View Reports',
+    label: 'Workspace Settings',
     icon: TrendingUp,
-    href: '/dashboard/analytics',
+    href: '/dashboard/settings',
     color: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
   },
 ];

@@ -45,9 +45,15 @@ export function WorkspaceCard({ workspace, onEdit, onDelete }: WorkspaceCardProp
             <span className="text-xl font-bold">{workspace.name.charAt(0).toUpperCase()}</span>
           </div>
           <div>
-            <Link href={`/dashboard/workspaces/${workspace.id}`} className="font-semibold text-foreground hover:underline">
-              {workspace.name}
-            </Link>
+            {isOwner ? (
+              <button onClick={() => onEdit(workspace)} className="font-semibold text-foreground hover:underline text-left">
+                {workspace.name}
+              </button>
+            ) : (
+              <span className="font-semibold text-foreground">
+                {workspace.name}
+              </span>
+            )}
             <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
               {workspace.description || 'No description provided.'}
             </p>
@@ -69,18 +75,18 @@ export function WorkspaceCard({ workspace, onEdit, onDelete }: WorkspaceCardProp
         )}
       </div>
       
-      <div className="mt-6 flex items-center justify-between border-t border-border pt-4 text-sm text-muted-foreground">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <FolderKanban className="h-4 w-4" />
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
+            <FolderKanban className="h-4 w-4 shrink-0" />
             <span>{workspace.project_count || 0} Project{workspace.project_count !== 1 ? 's' : ''}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Users className="h-4 w-4" />
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
+            <Users className="h-4 w-4 shrink-0" />
             <span>{workspace.member_count || 1} Member{workspace.member_count !== 1 ? 's' : ''}</span>
           </div>
         </div>
-        <div className="text-xs">
+        <div className="text-xs whitespace-nowrap opacity-80">
           {new Date(workspace.created_at).toLocaleDateString()}
         </div>
       </div>

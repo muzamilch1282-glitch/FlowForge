@@ -6,6 +6,15 @@ import { usePathname } from 'next/navigation';
 function getBreadcrumbData(pathname: string): { title: string; description: string } {
   const segments = pathname.split('/').filter(Boolean);
   const last = segments[segments.length - 1] || 'dashboard';
+  const parent = segments.length > 1 ? segments[segments.length - 2] : null;
+
+  if (parent === 'projects') {
+    return { title: 'Project Details', description: 'Manage your project tasks and settings.' };
+  }
+  if (parent === 'tasks') {
+    return { title: 'Task Details', description: 'View and edit task information.' };
+  }
+
   const formatted = last
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -30,12 +39,11 @@ function getBreadcrumbData(pathname: string): { title: string; description: stri
 
 export function Breadcrumbs() {
   const pathname = usePathname();
-  const { title, description } = getBreadcrumbData(pathname);
+  const { title } = getBreadcrumbData(pathname);
 
   return (
-    <div className="hidden sm:block">
-      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-      <p className="text-xs text-muted-foreground">{description}</p>
+    <div className="hidden sm:flex items-center text-sm font-medium text-muted-foreground">
+      <span>{title}</span>
     </div>
   );
 }

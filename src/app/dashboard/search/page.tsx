@@ -141,7 +141,7 @@ function GlobalSearchContent() {
           return pOrder[b.priority] - pOrder[a.priority];
         }
         case 'status': {
-          const sOrder = { 'todo': 1, 'in-progress': 2, 'review': 3, 'completed': 4 };
+          const sOrder: Record<string, number> = { 'backlog': 0, 'todo': 1, 'in-progress': 2, 'review': 3, 'completed': 4 };
           return sOrder[a.status] - sOrder[b.status];
         }
         case 'due_date':

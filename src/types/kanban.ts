@@ -10,7 +10,8 @@ export type BoardState = {
 };
 
 export const defaultColumns: Column[] = [
-  { id: 'todo', title: 'Todo' },
+  { id: 'backlog', title: 'Backlog' },
+  { id: 'todo', title: 'To Do' },
   { id: 'in-progress', title: 'In Progress' },
   { id: 'review', title: 'Review' },
   { id: 'completed', title: 'Completed' },

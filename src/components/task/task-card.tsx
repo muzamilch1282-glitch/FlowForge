@@ -16,9 +16,10 @@ interface TaskCardProps {
   project?: Project;
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
+  onView?: (task: Task) => void;
 }
 
-export function TaskCard({ task, project, onEdit, onDelete }: TaskCardProps) {
+export function TaskCard({ task, project, onEdit, onDelete, onView }: TaskCardProps) {
   const { hasPermission, isAdmin } = usePermissions();
   const { user } = useAuth();
   const [showDropdown, setShowDropdown] = React.useState(false);
@@ -52,12 +53,12 @@ export function TaskCard({ task, project, onEdit, onDelete }: TaskCardProps) {
       <div>
         <div className="mb-3 flex items-start justify-between">
           <div className="flex flex-col gap-1.5">
-            <Link 
-              href={`/dashboard/tasks/${task.id}`}
-              className="text-lg font-semibold tracking-tight text-foreground hover:text-primary transition-colors line-clamp-1"
+            <button 
+              onClick={(e) => { e.preventDefault(); onView && onView(task); }}
+              className="text-lg text-left font-semibold tracking-tight text-foreground hover:text-primary transition-colors line-clamp-1"
             >
               {task.title}
-            </Link>
+            </button>
           </div>
           
           <div className="relative">

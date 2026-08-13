@@ -12,6 +12,7 @@ interface TaskGridProps {
   hasProjects: boolean;
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
+  onView?: (task: Task) => void;
   onCreateNew: () => void;
 }
 
@@ -22,6 +23,7 @@ export function TaskGrid({
   hasProjects,
   onEdit,
   onDelete,
+  onView,
   onCreateNew
 }: TaskGridProps) {
   if (isLoading) {
@@ -43,6 +45,7 @@ export function TaskGrid({
             project={project}
             onEdit={onEdit} 
             onDelete={onDelete} 
+            onView={onView}
           />
         );
       })}

@@ -24,6 +24,7 @@ export default function KanbanBoardPage() {
     if (!boardState) return boardState;
 
     const filtered: BoardState = {
+      'backlog': [],
       'todo': [],
       'in-progress': [],
       'review': [],

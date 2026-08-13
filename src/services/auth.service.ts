@@ -97,6 +97,25 @@ export const authService = {
   },
 
   /**
+   * Update the current user's profile
+   */
+  updateProfile: async (userId: string, data: { full_name?: string; avatar_url?: string }) => {
+    const supabase = getSupabaseClient();
+    const { data: updatedData, error } = await supabase
+      .from('profiles')
+      .update(data)
+      .eq('id', userId)
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    return updatedData;
+  },
+
+  /**
    * Logout current user
    */
   logout: async () => {

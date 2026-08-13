@@ -2,7 +2,7 @@ import * as React from 'react';
 
 export function BoardSkeleton() {
   return (
-    <div className="flex h-full gap-6 overflow-x-hidden pt-4">
+    <div className="flex h-full gap-6 overflow-x-hidden pt-4 animate-in fade-in duration-500">
       {[1, 2, 3, 4].map((col) => (
         <div key={col} className="flex h-full w-[350px] shrink-0 flex-col rounded-xl bg-secondary/30 p-4">
           <div className="mb-4 flex items-center justify-between">

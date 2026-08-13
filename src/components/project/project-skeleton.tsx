@@ -2,7 +2,7 @@ import * as React from 'react';
 
 export function ProjectSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-in fade-in duration-500">
       {[...Array(6)].map((_, i) => (
         <div key={i} className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm animate-pulse">
           <div className="p-5 flex-1">

@@ -1,7 +1,8 @@
 import {
-  LayoutDashboard,
-  FolderKanban,
+  Home,
+  Inbox,
   CheckSquare,
+  FolderKanban,
   Building2,
   BarChart3,
   Users,
@@ -11,6 +12,8 @@ import {
   History,
   CalendarDays,
   Zap,
+  Clock,
+  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -23,96 +26,27 @@ export interface NavItem {
 }
 
 export interface NavGroup {
-  label: string;
+  label: string | null;
   items: NavItem[];
 }
 
 export const sidebarNavigation: NavGroup[] = [
   {
-    label: 'Overview',
+    label: null, // Top level items without group label
     items: [
-      {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutDashboard,
-      },
+      { title: 'Home', href: '/dashboard', icon: Home },
+      { title: 'Inbox', href: '/dashboard/notifications', icon: Inbox },
+      { title: 'My Tasks', href: '/dashboard/tasks', icon: CheckSquare },
     ],
   },
   {
-    label: 'Manage',
+    label: 'Workspace',
     items: [
-      {
-        title: 'Projects',
-        href: '/dashboard/projects',
-        icon: FolderKanban,
-      },
-      {
-        title: 'Tasks',
-        href: '/dashboard/tasks',
-        icon: CheckSquare,
-      },
-      {
-        title: 'Workspaces',
-        href: '/dashboard/workspaces',
-        icon: Building2,
-      },
-      {
-        title: 'Calendar',
-        href: '/dashboard/calendar',
-        icon: CalendarDays,
-      },
-      {
-        title: 'Timeline',
-        href: '/dashboard/timeline',
-        icon: FolderKanban,
-      },
-      {
-        title: 'Automations',
-        href: '/dashboard/automations',
-        icon: Zap,
-      },
+      { title: 'Projects', href: '/dashboard/projects', icon: FolderKanban },
+      { title: 'Team', href: '/dashboard/team', icon: Users },
+      { title: 'Calendar', href: '/dashboard/calendar', icon: CalendarDays },
     ],
-  },
-  {
-    label: 'Insights',
-    items: [
-      {
-        title: 'Analytics',
-        href: '/dashboard/analytics',
-        icon: BarChart3,
-      },
-      {
-        title: 'Activity',
-        href: '/dashboard/activity',
-        icon: History,
-      },
-    ],
-  },
-  {
-    label: 'Team',
-    items: [
-      {
-        title: 'Members',
-        href: '/dashboard/team',
-        icon: Users,
-      },
-    ],
-  },
-  {
-    label: 'Account',
-    items: [
-      {
-        title: 'Settings',
-        href: '/dashboard/settings',
-        icon: Settings,
-      },
-      {
-        title: 'Profile',
-        href: '/dashboard/profile',
-        icon: UserCircle,
-      },
-    ],
-  },
+  }
 ];
 
 export const userMenuItems = [

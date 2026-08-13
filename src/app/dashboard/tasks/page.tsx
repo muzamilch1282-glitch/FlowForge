@@ -6,11 +6,12 @@ import { Plus } from 'lucide-react';
 import { useTasks } from '@/hooks/useTasks';
 import { useProjects } from '@/hooks/useProjects';
 import { useWorkspace } from '@/hooks/useWorkspace';
-import { TaskGrid } from '@/components/task/task-grid';
+import { TaskTable } from '@/components/task/task-table';
 import { TaskModal } from '@/components/task/task-modal';
 import { TaskSearch } from '@/components/task/task-search';
 import { TaskFilters, TaskFilterState } from '@/components/task/task-filters';
 import { TaskSortDropdown, TaskSortOption } from '@/components/task/task-sort-dropdown';
+import { TaskDetailDrawer } from '@/components/task/task-detail-drawer';
 import { Task, CreateTaskDTO, UpdateTaskDTO } from '@/types/task';
 import { isPast, isToday, isThisWeek, parseISO } from 'date-fns';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
@@ -46,6 +47,9 @@ export default function TasksPage() {
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingTask, setEditingTask] = React.useState<Task | null>(null);
+  
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [viewingTask, setViewingTask] = React.useState<Task | null>(null);
 
   const handleFilterChange = (key: keyof TaskFilterState, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -125,7 +129,7 @@ export default function TasksPage() {
           return pOrder[b.priority] - pOrder[a.priority];
         }
         case 'status': {
-          const sOrder = { 'todo': 1, 'in-progress': 2, 'review': 3, 'completed': 4 };
+          const sOrder: Record<string, number> = { 'backlog': 0, 'todo': 1, 'in-progress': 2, 'review': 3, 'completed': 4 };
           return sOrder[a.status] - sOrder[b.status];
         }
         case 'due_date':
@@ -148,6 +152,11 @@ export default function TasksPage() {
   const handleEdit = (task: Task) => {
     setEditingTask(task);
     setIsModalOpen(true);
+  };
+
+  const handleView = (task: Task) => {
+    setViewingTask(task);
+    setIsDrawerOpen(true);
   };
 
   const handleDelete = (task: Task) => {
@@ -173,18 +182,19 @@ export default function TasksPage() {
   const isLoading = tasksLoading || projectsLoading || workspacesLoading;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Tasks"
-        description="Manage and track your individual tasks."
-      >
+    <div className="space-y-6 animate-in fade-in duration-500 max-w-6xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border/50 pb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Tasks</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage and track your tasks across all projects.</p>
+        </div>
         <PermissionGuard permission={PERMISSIONS.TASK_CREATE}>
-          <Button onClick={handleCreateNew} disabled={!hasProjects} className="gap-2">
-            <Plus className="h-4 w-4" />
+          <Button onClick={handleCreateNew} disabled={!hasProjects} size="sm" className="gap-1.5 h-8">
+            <Plus className="h-3.5 w-3.5" />
             New Task
           </Button>
         </PermissionGuard>
-      </PageHeader>
+      </div>
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -206,14 +216,22 @@ export default function TasksPage() {
         />
       </div>
 
-      <TaskGrid
+      <TaskTable
         tasks={filteredTasks}
         projects={projects}
         isLoading={isLoading}
         hasProjects={hasProjects}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onView={handleView}
         onCreateNew={handleCreateNew}
+      />
+
+      <TaskDetailDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        task={viewingTask}
+        project={projects.find(p => p.id === viewingTask?.project_id)}
       />
 
       <TaskModal

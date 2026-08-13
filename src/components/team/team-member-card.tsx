@@ -41,33 +41,35 @@ export function TeamMemberCard({
   }, []);
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-all hover:shadow-sm">
-      <div className="flex items-center gap-4">
-        <MemberAvatar name={name} avatarUrl={profile?.avatar_url} size="lg" />
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-foreground">{name}</span>
-            {isCurrentUser && (
-              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                You
-              </span>
-            )}
+    <tr className="group hover:bg-secondary/40 transition-colors border-b border-border/50 last:border-0">
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <MemberAvatar name={name} avatarUrl={profile?.avatar_url} size="sm" />
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-foreground text-sm">{name}</span>
+              {isCurrentUser && (
+                <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  You
+                </span>
+              )}
+            </div>
+            <span className="text-xs text-muted-foreground">{email}</span>
           </div>
-          <span className="text-sm text-muted-foreground">{email}</span>
         </div>
-      </div>
+      </td>
+      
+      <td className="px-4 py-3 hidden sm:table-cell">
+        <MemberRoleBadge role={member.role} />
+      </td>
 
-      <div className="flex items-center gap-4">
-        <div className="hidden sm:block">
-          <MemberRoleBadge role={member.role} />
-        </div>
-        
-        {isAdmin && !isCurrentUser && (
-          <div className="relative" ref={dropdownRef}>
+      <td className="px-4 py-3 text-right">
+        {isAdmin && !isCurrentUser ? (
+          <div className="relative inline-block text-left" ref={dropdownRef}>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={() => setIsOpen(!isOpen)}
               disabled={isProcessing}
             >
@@ -109,8 +111,10 @@ export function TeamMemberCard({
               </div>
             )}
           </div>
+        ) : (
+          <div className="h-8 w-8 inline-block" /> // Placeholder to maintain alignment
         )}
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 }

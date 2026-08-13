@@ -82,68 +82,79 @@ export default function TeamsPage() {
   const isLoading = workspacesLoading || (teamLoading && activeWorkspaceId !== '') || permissionsLoading;
 
   return (
-    <ProtectedRoute permission={PERMISSIONS.WORKSPACE_VIEW}>
-      <div className="space-y-6">
-        <PageHeader
-          title="Team Management"
-          description="Manage your team members and their roles."
-        >
-          <PermissionGuard permission={PERMISSIONS.MEMBER_INVITE}>
-            <Link href="/dashboard/team/invite">
-              <Button disabled={!activeWorkspaceId} className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                Invite Member
-              </Button>
-            </Link>
-          </PermissionGuard>
-        </PageHeader>
+    <div className="space-y-6">
+      <PageHeader
+        title="Team Management"
+        description="Manage your team members and their roles."
+      >
+        <PermissionGuard permission={PERMISSIONS.MEMBER_INVITE}>
+          <Link href="/dashboard/team/invite">
+            <Button disabled={!activeWorkspaceId} className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              Invite Member
+            </Button>
+          </Link>
+        </PermissionGuard>
+      </PageHeader>
 
-        {workspaces.length > 0 && (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 shadow-sm">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">Workspace:</span>
-              <select
-                value={activeWorkspaceId}
-                onChange={(e) => setActiveWorkspaceId(e.target.value)}
-                className="bg-transparent text-sm font-medium text-foreground focus:outline-none appearance-none pr-2 cursor-pointer max-w-[200px] truncate"
-              >
-                {workspaces.map(w => (
-                  <option key={w.id} value={w.id}>{w.name}</option>
+      {workspaces.length > 0 && (
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 shadow-sm">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Workspace:</span>
+            <select
+              value={activeWorkspaceId}
+              onChange={(e) => setActiveWorkspaceId(e.target.value)}
+              className="bg-transparent text-sm font-medium text-foreground focus:outline-none appearance-none pr-2 cursor-pointer max-w-[200px] truncate"
+            >
+              {workspaces.map(w => (
+                <option key={w.id} value={w.id}>{w.name}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="sm:ml-auto flex items-center gap-2">
+            <TeamSearch value={searchQuery} onChange={setSearchQuery} className="w-full sm:w-[250px]" />
+            <TeamFilters selectedRole={selectedRole} onRoleChange={setSelectedRole} />
+          </div>
+        </div>
+      )}
+
+      {!workspacesLoading && workspaces.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-12 text-center">
+          <p className="text-sm text-muted-foreground">You don't belong to any workspaces yet.</p>
+        </div>
+      ) : isLoading ? (
+        <TeamSkeleton />
+      ) : filteredMembers.length > 0 ? (
+        <div className="rounded-lg border border-border/50 bg-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="text-xs text-muted-foreground uppercase bg-secondary/30 border-b border-border/50">
+                <tr>
+                  <th className="px-4 py-3 font-semibold">Member</th>
+                  <th className="px-4 py-3 font-semibold w-40 hidden sm:table-cell">Role</th>
+                  <th className="px-4 py-3 font-semibold w-20"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {filteredMembers.map((member) => (
+                  <TeamMemberCard
+                    key={member.id}
+                    member={member}
+                    isAdmin={isAdmin()}
+                    isCurrentUser={member.user_id === user?.id}
+                    onRemove={removeMember}
+                    onUpdateRole={(id, role) => updateRole({ id, role })}
+                    isProcessing={isRemoving || isUpdating}
+                  />
                 ))}
-              </select>
-            </div>
-            
-            <div className="sm:ml-auto flex items-center gap-2">
-              <TeamSearch value={searchQuery} onChange={setSearchQuery} className="w-full sm:w-[250px]" />
-              <TeamFilters selectedRole={selectedRole} onRoleChange={setSelectedRole} />
-            </div>
+              </tbody>
+            </table>
           </div>
-        )}
-
-        {!workspacesLoading && workspaces.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-12 text-center">
-            <p className="text-sm text-muted-foreground">You don't belong to any workspaces yet.</p>
-          </div>
-        ) : isLoading ? (
-          <TeamSkeleton />
-        ) : filteredMembers.length > 0 ? (
-          <div className="grid gap-4">
-            {filteredMembers.map((member) => (
-              <TeamMemberCard
-                key={member.id}
-                member={member}
-                isAdmin={isAdmin()}
-                isCurrentUser={member.user_id === user?.id}
-                onRemove={removeMember}
-                onUpdateRole={(id, role) => updateRole({ id, role })}
-                isProcessing={isRemoving || isUpdating}
-              />
-            ))}
-          </div>
-        ) : (
-          <EmptyMembers onInvite={() => router.push('/dashboard/team/invite')} isAdmin={isAdmin()} />
-        )}
-      </div>
-    </ProtectedRoute>
+        </div>
+      ) : (
+        <EmptyMembers onInvite={() => router.push('/dashboard/team/invite')} isAdmin={isAdmin()} />
+      )}
+    </div>
   );
 }

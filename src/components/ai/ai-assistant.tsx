@@ -46,7 +46,7 @@ export function AIAssistant() {
       <div className="flex items-center justify-between p-4 border-b border-border bg-card">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Sparkles className="h-5 w-5" />
+            <Bot className="h-5 w-5" />
           </div>
           <div>
             <h2 className="font-semibold text-foreground leading-none">FlowForge AI</h2>

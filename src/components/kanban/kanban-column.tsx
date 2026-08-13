@@ -25,11 +25,11 @@ export function KanbanColumn({ column, tasks, projects }: KanbanColumnProps) {
   const taskIds = React.useMemo(() => tasks.map(t => t.id), [tasks]);
 
   return (
-    <div className="flex h-full w-full min-w-[320px] max-w-[350px] shrink-0 flex-col rounded-xl bg-secondary/30">
-      <div className="flex items-center justify-between p-4 pb-2">
-        <h3 className="font-semibold text-foreground flex items-center gap-2">
+    <div className="flex h-full w-full min-w-[300px] max-w-[320px] shrink-0 flex-col rounded-xl bg-transparent">
+      <div className="flex items-center justify-between px-3 py-2">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           {column.title}
-          <span className="flex h-5 items-center justify-center rounded-full bg-secondary px-2 text-xs font-medium text-muted-foreground">
+          <span className="flex items-center justify-center rounded bg-secondary/60 px-1.5 py-0.5 text-[10px] font-bold text-foreground">
             {tasks.length}
           </span>
         </h3>

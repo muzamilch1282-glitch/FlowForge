@@ -3,45 +3,89 @@
 import * as React from 'react';
 import { use } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Edit, LayoutList, Calendar, Building2, Plus } from 'lucide-react';
+import { ArrowLeft, Edit, LayoutList, Calendar, Building2, Plus, KanbanSquare, AlignLeft, FileText, Activity } from 'lucide-react';
 import { useProjectById } from '@/hooks/useProjects';
 import { useWorkspaceById } from '@/hooks/useWorkspace';
+import { useTasksByProject, useTasks } from '@/hooks/useTasks'; 
 import { Button, Badge } from '@/components/shared';
 import { ProjectMembers } from '@/components/project/project-members';
-import { ProjectProgress } from '@/components/project/project-progress';
-import { EmptyState } from '@/components/dashboard/empty-state';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
-import { format, parseISO } from 'date-fns';
+import { ProjectOverviewTab } from '@/components/project/project-overview-tab';
+import { KanbanBoard } from '@/components/kanban/kanban-board';
+import { ProjectHeader } from '@/components/project/project-header';
+import { ProjectActivityTab } from '@/components/project/project-activity-tab';
+import { ProjectAnalyticsTab } from '@/components/project/project-analytics-tab';
+import { TimelineBoard } from '@/components/timeline/timeline-board';
+import { TaskTable } from '@/components/task/task-table';
+import { TaskDetailDrawer } from '@/components/task/task-detail-drawer';
+import { TaskModal } from '@/components/task/task-modal';
+import { AutomationBuilder } from '@/components/automations/automation-builder';
+import { BarChart2 } from 'lucide-react';
+import { defaultColumns, BoardState } from '@/types/kanban';
+import { TaskStatus, Task } from '@/types/task';
+import { cn } from '@/lib/utils';
 
 export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const { data: project, isLoading: isProjectLoading, error } = useProjectById(resolvedParams.id);
+  const projectId = resolvedParams.id;
   
-  // Use workspace conditionally if project exists
+  const { data: project, isLoading: isProjectLoading, error } = useProjectById(projectId);
   const { data: workspace, isLoading: isWorkspaceLoading } = useWorkspaceById(project?.workspace_id || '');
+  const { data: tasks, isLoading: isTasksLoading } = useTasksByProject(projectId);
+  const { updateTask, deleteTask } = useTasks();
 
-  const statusColors = {
-    'active': 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
-    'on-hold': 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
-    'completed': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
+  const [activeTab, setActiveTab] = React.useState<'overview' | 'board' | 'list' | 'timeline' | 'calendar' | 'analytics' | 'activity'>('overview');
+  
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [viewingTask, setViewingTask] = React.useState<Task | null>(null);
+  
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [editingTask, setEditingTask] = React.useState<Task | null>(null);
+
+  const [isAutomationsOpen, setIsAutomationsOpen] = React.useState(false);
+
+  const initialBoardState = React.useMemo(() => {
+    const state: BoardState = { backlog: [], todo: [], 'in-progress': [], review: [], completed: [] };
+    if (tasks) {
+      tasks.forEach(task => {
+        if (state[task.status]) {
+          state[task.status].push(task);
+        } else {
+          state['todo'].push(task); // Fallback
+        }
+      });
+    }
+    return state;
+  }, [tasks]);
+
+  const handleTaskMove = (taskId: string, newStatus: TaskStatus) => {
+    updateTask({ id: taskId, data: { status: newStatus } });
+  };
+  
+  const handleViewTask = (task: Task) => {
+    setViewingTask(task);
+    setIsDrawerOpen(true);
+  };
+  
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setIsModalOpen(true);
+  };
+  
+  const handleDeleteTask = (task: Task) => {
+    if (window.confirm(`Are you sure you want to delete task "${task.title}"?`)) {
+      deleteTask(task.id);
+    }
+  };
+  
+  const handleCreateNewTask = () => {
+    setEditingTask(null);
+    setIsModalOpen(true);
   };
 
-  const priorityColors = {
-    'low': 'bg-slate-100 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400',
-    'medium': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400',
-    'high': 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400',
-  };
-
-  // Generate dummy progress
-  const dummyProgress = React.useMemo(() => {
-    if (!project) return 0;
-    const sum = project.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return sum % 100;
-  }, [project]);
-
-  if (isProjectLoading || (project && isWorkspaceLoading)) {
+  if (isProjectLoading || (project && isWorkspaceLoading) || isTasksLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
+      <div className="flex h-[50vh] items-center justify-center">
         <LoadingSpinner className="h-8 w-8 text-primary" />
       </div>
     );
@@ -51,7 +95,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4 text-center">
         <h2 className="text-xl font-semibold text-foreground">Project not found</h2>
-        <p className="text-muted-foreground">The project you&apos;re looking for doesn&apos;t exist or you don&apos;t have access.</p>
+        <p className="text-muted-foreground">The project you're looking for doesn't exist or you don't have access.</p>
         <Link href="/dashboard/projects">
           <Button variant="outline">Back to Projects</Button>
         </Link>
@@ -59,104 +103,127 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
     );
   }
 
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: LayoutList },
+    { id: 'board', label: 'Board', icon: KanbanSquare },
+    { id: 'list', label: 'List', icon: AlignLeft },
+    { id: 'timeline', label: 'Timeline', icon: Activity },
+    { id: 'analytics', label: 'Analytics', icon: BarChart2 },
+    { id: 'activity', label: 'Activity', icon: Activity },
+  ] as const;
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col gap-4">
-        <Link href="/dashboard/projects" className="flex w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Projects
-        </Link>
-        
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-2 max-w-2xl">
-            <h1 className="text-3xl font-bold text-foreground">{project.title}</h1>
-            <p className="text-muted-foreground text-lg">{project.description || 'No description provided'}</p>
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Badge className={statusColors[project.status]}>
-                {project.status.replace('-', ' ')}
-              </Badge>
-              <Badge className={priorityColors[project.priority]}>
-                {project.priority} priority
-              </Badge>
-              {workspace && (
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-secondary/30 px-2 py-0.5 rounded-full">
-                  <Building2 className="h-3.5 w-3.5" />
-                  <span>{workspace.name}</span>
-                </div>
-              )}
-            </div>
-          </div>
+    <div className="flex flex-col h-[calc(100vh-4rem)] animate-in fade-in duration-500">
+      
+      {/* Scrollable container for page content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="space-y-6 pb-12 max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
           
-          <Button variant="outline" className="gap-2 self-start sm:self-auto shrink-0">
-            <Edit className="h-4 w-4" />
-            Edit Project
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
-              <LayoutList className="h-5 w-5 text-primary" />
-              Tasks
-            </h2>
-            <Button size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Task
-            </Button>
-          </div>
-          
-          <EmptyState
-            title="No tasks yet"
-            description="Create your first task to start tracking work in this project."
-            actionLabel="Create Task"
-            onAction={() => console.log('Create task')}
+          <ProjectHeader 
+            project={project} 
+            workspace={workspace || undefined} 
+            onAddTask={handleCreateNewTask}
+            onAutomations={() => setIsAutomationsOpen(true)}
           />
-        </div>
 
-        <div className="space-y-6">
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-6">
-            <div>
-              <h3 className="font-semibold text-foreground mb-4">Project Progress</h3>
-              <ProjectProgress value={dummyProgress} />
-            </div>
-
-            <div className="pt-2">
-              <h3 className="font-semibold text-foreground mb-4">Dates</h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary/50 text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {project.start_date ? format(parseISO(project.start_date), 'MMM d, yyyy') : 'Not set'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Start Date</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary/50 text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {project.end_date ? format(parseISO(project.end_date), 'MMM d, yyyy') : 'Not set'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Due Date</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <h3 className="font-semibold text-foreground mb-4">Team Members</h3>
-              <ProjectMembers size="md" max={5} />
+          {/* Navigation Tabs */}
+          <div className="border-b border-border/60 mt-2">
+            <div className="flex gap-6 overflow-x-auto scrollbar-hide">
+              {tabs.map(tab => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "flex items-center gap-2 pb-3 pt-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                      isActive 
+                        ? "border-primary text-primary" 
+                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
+
+          {/* Tab Content Area */}
+          <div className="mt-6">
+            {activeTab === 'overview' && (
+              <ProjectOverviewTab project={project} tasks={tasks || []} workspaceId={workspace?.id || ''} />
+            )}
+            
+            {activeTab === 'board' && (
+              <div className="h-[calc(100vh-280px)] min-h-[500px]">
+                <KanbanBoard 
+                  initialBoardState={initialBoardState} 
+                  columns={defaultColumns} 
+                  projects={[project]} 
+                  onTaskMove={handleTaskMove}
+                />
+              </div>
+            )}
+            
+            {activeTab === 'list' && (
+              <div className="animate-in fade-in duration-300">
+                <TaskTable
+                  tasks={tasks || []}
+                  projects={[project]}
+                  isLoading={isTasksLoading}
+                  hasProjects={true}
+                  onEdit={handleEditTask}
+                  onDelete={handleDeleteTask}
+                  onView={handleViewTask}
+                  onCreateNew={handleCreateNewTask}
+                />
+              </div>
+            )}
+
+            {activeTab === 'timeline' && (
+              <div className="h-[calc(100vh-280px)] min-h-[500px]">
+                <TimelineBoard tasks={tasks || []} projects={[project]} />
+              </div>
+            )}
+            
+            {activeTab === 'analytics' && (
+              <ProjectAnalyticsTab project={project} tasks={tasks || []} />
+            )}
+
+            {activeTab === 'activity' && (
+              <ProjectActivityTab projectId={project.id} />
+            )}
+          </div>
+          
         </div>
       </div>
+      
+      <TaskDetailDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        task={viewingTask}
+        project={project}
+      />
+
+      <TaskModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        task={editingTask}
+        projects={[project]}
+        onSubmit={() => setIsModalOpen(false)}
+        isSubmitting={false}
+      />
+
+      {isAutomationsOpen && workspace && (
+        <AutomationBuilder 
+          workspaceId={workspace.id}
+          existingRule={null} 
+          onClose={() => setIsAutomationsOpen(false)} 
+        />
+      )}
     </div>
   );
 }

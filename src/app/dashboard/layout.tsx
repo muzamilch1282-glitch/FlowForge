@@ -9,7 +9,7 @@ export default function DashboardLayout({
 }) {
   return (
     <RealtimeProvider>
-      <div className="flex h-screen overflow-hidden bg-background">
+      <div className="flex h-[100dvh] overflow-hidden bg-background">
         {/* Sidebar */}
         <Sidebar />
 
@@ -19,16 +19,14 @@ export default function DashboardLayout({
           <TopNavbar />
 
           {/* Page content with smooth transitions */}
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto scrollbar-hide">
             <ProtectedLayout>
-              <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-7xl">
+              <div className="mx-auto px-4 py-4 sm:px-6 lg:px-8 h-full">
                 {children}
               </div>
             </ProtectedLayout>
           </main>
 
-          {/* Footer */}
-          <Footer />
         </div>
       </div>
       {/* Global Slide-over AI Assistant */}
