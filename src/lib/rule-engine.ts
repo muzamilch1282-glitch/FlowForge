@@ -75,12 +75,10 @@ export class RuleEngine {
           if (payload.task) message = message.replace('{{task.title}}', payload.task.title);
           
           await notificationService.createNotification({
-            user_id: action_config.notify_user_id || payload.userId, // fallback to triggerer
+            user_id: action_config.notify_user_id || payload.userId,
             type: 'system',
             title: `Automation: ${rule.name}`,
             message: message,
-            entity_type: payload.task ? 'task' : (payload.project ? 'project' : 'workspace'),
-            entity_id: payload.task?.id || payload.project?.id || payload.workspaceId,
           });
           break;
         }
