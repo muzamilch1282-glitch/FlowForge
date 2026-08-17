@@ -9,11 +9,11 @@ interface ProjectProgressProps {
 export function ProjectProgress({ value, className }: ProjectProgressProps) {
   const safeValue = Math.min(Math.max(value, 0), 100);
   
-  let colorClass = 'bg-blue-500';
+  let colorClass = 'bg-orange-500';
   if (safeValue >= 100) colorClass = 'bg-emerald-500';
-  else if (safeValue > 70) colorClass = 'bg-indigo-500';
-  else if (safeValue > 30) colorClass = 'bg-violet-500';
-  else colorClass = 'bg-amber-500';
+  else if (safeValue > 70) colorClass = 'bg-amber-500';
+  else if (safeValue > 30) colorClass = 'bg-orange-400';
+  else colorClass = 'bg-rose-500';
 
   return (
     <div className={cn("w-full space-y-1.5", className)}>

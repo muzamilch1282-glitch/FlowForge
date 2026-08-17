@@ -43,8 +43,17 @@ export function ProjectForm({ initialData, workspaces, onSubmit, isSubmitting }:
     },
   });
 
+  const handleFormSubmit = (data: ProjectFormValues) => {
+    const cleanedData = {
+      ...data,
+      start_date: data.start_date || undefined,
+      end_date: data.end_date || undefined,
+    };
+    onSubmit(cleanedData);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <div className="space-y-2">
         <label htmlFor="workspace_id" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
           Workspace

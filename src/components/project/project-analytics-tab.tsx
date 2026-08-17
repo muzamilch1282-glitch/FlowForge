@@ -10,6 +10,8 @@ import {
 } from 'recharts';
 import { Target, CheckSquare, Activity, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
+import { TimeEntry } from '@/types/time';
 
 interface ProjectAnalyticsTabProps {
   project: Project;
@@ -33,7 +35,42 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+import { useQuery } from '@tanstack/react-query';
+import { timeService } from '@/services/time.service';
+import { formatDuration } from '@/hooks/useTimeTracking';
+import { Clock } from 'lucide-react';
+
 export function ProjectAnalyticsTab({ project, tasks }: ProjectAnalyticsTabProps) {
+  const { data: timeEntries = [] } = useQuery({
+    queryKey: ['project_time_entries', project.id],
+    queryFn: () => timeService.getEntriesByTasks(tasks.map(t => t.id)),
+    enabled: tasks.length > 0,
+  });
+
+  const { data: activeTimer } = useQuery({
+    queryKey: ['active_timer'],
+    queryFn: () => timeService.getActiveTimer(),
+  });
+
+  const [liveDuration, setLiveDuration] = React.useState(0);
+  const isTimerActiveInProject = activeTimer && tasks.some(t => t.id === activeTimer.task_id);
+
+  React.useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activeTimer && isTimerActiveInProject) {
+      const startedAt = new Date(activeTimer.started_at).getTime();
+      const updateDuration = () => {
+        const now = Date.now();
+        setLiveDuration(Math.max(0, Math.floor((now - startedAt) / 1000)));
+      };
+      updateDuration();
+      interval = setInterval(updateDuration, 1000);
+    } else {
+      setLiveDuration(0);
+    }
+    return () => clearInterval(interval);
+  }, [activeTimer, isTimerActiveInProject]);
+
   const stats = React.useMemo(() => {
     const completedTasks = tasks.filter(t => t.status === 'completed');
     const overdueTasks = tasks.filter(t => {
@@ -45,17 +82,17 @@ export function ProjectAnalyticsTab({ project, tasks }: ProjectAnalyticsTabProps
     const completionRate = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 100) : 0;
 
     const statusData = [
-      { name: 'Backlog', value: tasks.filter(t => t.status === 'backlog').length, color: '#94a3b8' },
-      { name: 'To Do', value: tasks.filter(t => t.status === 'todo').length, color: '#38bdf8' },
-      { name: 'In Progress', value: tasks.filter(t => t.status === 'in-progress').length, color: '#635BFF' },
-      { name: 'Review', value: tasks.filter(t => t.status === 'review').length, color: '#a855f7' },
+      { name: 'Backlog', value: tasks.filter(t => t.status === 'backlog').length, color: '#a8a29e' },
+      { name: 'To Do', value: tasks.filter(t => t.status === 'todo').length, color: '#fbbf24' },
+      { name: 'In Progress', value: tasks.filter(t => t.status === 'in-progress').length, color: '#f97316' },
+      { name: 'Review', value: tasks.filter(t => t.status === 'review').length, color: '#ea580c' },
       { name: 'Completed', value: completedTasks.length, color: '#10b981' },
     ].filter(item => item.value > 0);
 
     const priorityData = [
-      { name: 'High', value: tasks.filter(t => t.priority === 'high').length, color: '#f43f5e' },
-      { name: 'Medium', value: tasks.filter(t => t.priority === 'medium').length, color: '#6366f1' },
-      { name: 'Low', value: tasks.filter(t => t.priority === 'low').length, color: '#94a3b8' },
+      { name: 'High', value: tasks.filter(t => t.priority === 'high').length, color: '#ef4444' },
+      { name: 'Medium', value: tasks.filter(t => t.priority === 'medium').length, color: '#f59e0b' },
+      { name: 'Low', value: tasks.filter(t => t.priority === 'low').length, color: '#a8a29e' },
     ].filter(item => item.value > 0);
 
     return {
@@ -68,9 +105,13 @@ export function ProjectAnalyticsTab({ project, tasks }: ProjectAnalyticsTabProps
     };
   }, [tasks]);
 
+  const totalTimeSpent = React.useMemo(() => {
+    return timeEntries.reduce((acc, entry) => acc + (entry.duration_seconds || 0), 0) + (isTimerActiveInProject ? liveDuration : 0);
+  }, [timeEntries, isTimerActiveInProject, liveDuration]);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="p-5 rounded-xl border border-border/60 bg-card shadow-sm">
           <div className="flex items-center gap-2 text-muted-foreground mb-3">
             <CheckSquare className="h-4 w-4" /> <span className="text-xs font-semibold uppercase tracking-wider">Total Tasks</span>
@@ -95,6 +136,18 @@ export function ProjectAnalyticsTab({ project, tasks }: ProjectAnalyticsTabProps
             <Target className="h-4 w-4" /> <span className="text-xs font-semibold uppercase tracking-wider">Completion Rate</span>
           </div>
           <div className="relative z-10 text-3xl font-bold text-foreground">{stats.completionRate}%</div>
+        </div>
+        <div className="p-5 rounded-xl border border-border/60 bg-card shadow-sm overflow-hidden relative">
+          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-500 mb-3">
+            <Clock className="h-4 w-4" /> <span className="text-xs font-semibold uppercase tracking-wider">Time Spent</span>
+          </div>
+          <div className="text-3xl font-bold text-foreground truncate">{formatDuration(totalTimeSpent)}</div>
+          {isTimerActiveInProject && (
+            <div className="absolute top-4 right-4 flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-[10px] uppercase font-bold text-red-500">Live</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -136,7 +189,7 @@ export function ProjectAnalyticsTab({ project, tasks }: ProjectAnalyticsTabProps
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted)/0.3)' }} />
                 <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={30}>
                   {stats.priorityData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>

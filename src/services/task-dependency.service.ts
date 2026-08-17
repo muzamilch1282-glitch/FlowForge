@@ -41,9 +41,9 @@ export const taskDependencyService = {
       .select(`
         task_id,
         depends_on_task_id,
-        tasks!inner(project_id)
+        dependent_task:tasks!task_dependencies_task_id_fkey!inner(project_id)
       `)
-      .eq('tasks.project_id', projectId);
+      .eq('dependent_task.project_id', projectId);
 
     if (error) throw new Error(error.message);
     return data || [];

@@ -50,6 +50,7 @@ export function useTimeTracking(taskId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active_timer'] });
       queryClient.invalidateQueries({ queryKey: ['time_entries', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['project_time_entries'] });
     },
   });
 
@@ -58,6 +59,7 @@ export function useTimeTracking(taskId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active_timer'] });
       queryClient.invalidateQueries({ queryKey: ['time_entries', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['project_time_entries'] });
     },
   });
 
@@ -65,6 +67,7 @@ export function useTimeTracking(taskId: string) {
     mutationFn: (entry: CreateTimeEntryDTO) => timeService.addManualEntry(entry),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time_entries', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['project_time_entries'] });
     },
   });
 
@@ -72,6 +75,7 @@ export function useTimeTracking(taskId: string) {
     mutationFn: (id: string) => timeService.deleteEntry(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time_entries', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['project_time_entries'] });
     },
   });
 

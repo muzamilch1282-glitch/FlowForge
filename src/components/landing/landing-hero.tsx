@@ -54,7 +54,7 @@ export function LandingHero() {
         />
         {/* Blob 2: Top-Right */}
         <div 
-          className="blob-animated absolute top-[0%] -right-[10%] w-[45%] h-[55%] rounded-full bg-blue-500 opacity-5 blur-[100px]"
+          className="blob-animated absolute top-[0%] -right-[10%] w-[45%] h-[55%] rounded-full bg-orange-500 opacity-5 blur-[100px]"
           style={{ animation: 'drift-2 80s infinite ease-in-out' }}
         />
         {/* Blob 3: Bottom-Center */}
@@ -108,7 +108,7 @@ export function LandingHero() {
           >
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
               <Link 
-                href="/signup" 
+                href="/register" 
                 className="w-full sm:w-auto bg-[var(--primary)] text-white rounded-full px-6 py-3 font-semibold hover:bg-[var(--primary-hover)] active:scale-[0.98] transition-all shadow-sm"
               >
                 Start for free
@@ -202,7 +202,7 @@ export function LandingHero() {
                           <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1 shrink-0"></div>
                         </div>
                         <div className="flex justify-end">
-                          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-violet-400 to-indigo-600 text-[8px] text-white flex items-center justify-center font-bold">AB</div>
+                          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 text-[8px] text-white flex items-center justify-center font-bold">AB</div>
                         </div>
                       </div>
                       <div className="bg-white rounded-lg border border-gray-100 p-2 shadow-sm">
@@ -211,7 +211,7 @@ export function LandingHero() {
                           <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1 shrink-0"></div>
                         </div>
                         <div className="flex justify-end">
-                          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 text-[8px] text-white flex items-center justify-center font-bold">JD</div>
+                          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-orange-400 to-rose-500 text-[8px] text-white flex items-center justify-center font-bold">JD</div>
                         </div>
                       </div>
                     </div>
@@ -250,7 +250,7 @@ export function LandingHero() {
                           <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1 shrink-0"></div>
                         </div>
                         <div className="flex justify-end">
-                          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-violet-400 to-indigo-600 text-[8px] text-white flex items-center justify-center font-bold">AB</div>
+                          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 text-[8px] text-white flex items-center justify-center font-bold">AB</div>
                         </div>
                       </div>
                     </div>

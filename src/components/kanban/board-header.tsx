@@ -12,6 +12,8 @@ interface BoardHeaderProps {
   onSearchChange: (val: string) => void;
   selectedProject: string;
   onProjectChange: (val: string) => void;
+  selectedStatus?: string;
+  onStatusChange?: (val: string) => void;
   selectedPriority: string;
   onPriorityChange: (val: string) => void;
   selectedAssignee: string;
@@ -24,6 +26,8 @@ export function BoardHeader({
   onSearchChange,
   selectedProject,
   onProjectChange,
+  selectedStatus = 'all',
+  onStatusChange = () => {},
   selectedPriority,
   onPriorityChange,
   selectedAssignee,
@@ -56,6 +60,8 @@ export function BoardHeader({
           projects={projects}
           selectedProject={selectedProject}
           onProjectChange={onProjectChange}
+          selectedStatus={selectedStatus}
+          onStatusChange={onStatusChange}
           selectedPriority={selectedPriority}
           onPriorityChange={onPriorityChange}
           selectedAssignee={selectedAssignee}

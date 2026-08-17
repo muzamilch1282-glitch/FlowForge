@@ -10,7 +10,7 @@ const teamMembers = [
     role: "Designer",
     tasks: 8,
     progress: "85%",
-    gradient: "from-violet-500 to-indigo-600",
+    gradient: "from-amber-500 to-orange-600",
     initials: "AH",
   },
   {

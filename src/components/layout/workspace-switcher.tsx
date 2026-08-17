@@ -84,7 +84,9 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
               </div>
               <div className="flex-1 flex flex-col items-start overflow-hidden">
                 <span className="truncate text-[13px] font-medium leading-tight">{workspace.name}</span>
-                <span className="text-[11px] text-muted-foreground leading-tight">1 Member</span>
+                <span className="text-[11px] text-muted-foreground leading-tight">
+                  {workspace.member_count || 1} Member{(workspace.member_count || 1) !== 1 ? 's' : ''}
+                </span>
               </div>
               {workspace.id === activeWorkspaceId && (
                 <Check className="h-4 w-4 text-primary shrink-0" />

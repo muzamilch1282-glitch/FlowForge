@@ -6,6 +6,8 @@ interface BoardFiltersProps {
   projects: Project[];
   selectedProject: string;
   onProjectChange: (val: string) => void;
+  selectedStatus: string;
+  onStatusChange: (val: string) => void;
   selectedPriority: string;
   onPriorityChange: (val: string) => void;
   selectedAssignee: string;
@@ -16,6 +18,8 @@ export function BoardFilters({
   projects,
   selectedProject,
   onProjectChange,
+  selectedStatus,
+  onStatusChange,
   selectedPriority,
   onPriorityChange,
   selectedAssignee,
@@ -34,6 +38,21 @@ export function BoardFilters({
           {projects.map((p) => (
             <option key={p.id} value={p.id}>{p.title}</option>
           ))}
+        </select>
+      </div>
+
+      <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 shadow-sm">
+        <select
+          value={selectedStatus}
+          onChange={(e) => onStatusChange(e.target.value)}
+          className="bg-transparent text-sm text-foreground focus:outline-none min-w-[100px]"
+        >
+          <option value="all">All Statuses</option>
+          <option value="backlog">Backlog</option>
+          <option value="todo">To Do</option>
+          <option value="in-progress">In Progress</option>
+          <option value="review">Review</option>
+          <option value="completed">Completed</option>
         </select>
       </div>
 

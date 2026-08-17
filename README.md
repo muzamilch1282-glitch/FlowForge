@@ -1,60 +1,104 @@
-# FlowForge
+<div align="center">
+  <img src="public/favicon.ico" alt="FlowForge Logo" width="80" height="80" />
+  <h1>FlowForge</h1>
+  <p>A modern, high-performance SaaS Project Management Dashboard designed for seamless team collaboration, task tracking, and workspace management.</p>
+</div>
 
-FlowForge is a modern SaaS Project Management Dashboard designed for seamless team collaboration, project tracking, and workspace management.
+---
 
-## Features
+## 🚀 Overview
 
-- **Projects Dashboard**: Track your active, on-hold, and completed projects with progress bars and priority badges.
-- **Workspaces**: Manage multiple workspaces and monitor their activity, project counts, and member limits.
-- **Team Management**: Invite team members, view their status, and manage their roles within the workspace.
-- **Profile Management**: Update your personal information and upload your avatar.
-- **Settings**: Configure application preferences, including appearance (Light/Dark mode), notifications, and security.
-- **Responsive Layout**: Works seamlessly across desktop and mobile devices.
+FlowForge is a comprehensive project management platform built to help teams organize their work effortlessly. From high-level project tracking to day-to-day task management on a Kanban board, FlowForge provides all the tools you need to stay productive and aligned.
 
-## Tech Stack
+## ✨ Key Features
 
-- **Framework**: Next.js 16 (App Router)
+- **Workspace Management**: Create isolated workspaces, manage multiple teams, and monitor workspace activity in real-time.
+- **Project Tracking**: Organize work into projects with real-time health indicators, progress tracking, and priority badges.
+- **Kanban Boards**: Drag-and-drop task management with customizable columns for smooth workflows.
+- **Task Calendar**: A dedicated calendar view to schedule deadlines and plan your upcoming sprints.
+- **Team Collaboration**: Invite members via email, assign granular roles (Owner, Admin, Member), and manage permissions using Row-Level Security (RLS).
+- **Authentication**: Fully integrated authentication flow (Sign Up, Sign In, Forgot Password) powered by Supabase.
+- **Account & Security**: Complete profile management, appearance settings (Light/Dark mode), and secure account deletion.
+- **Real-Time Data**: Live updates powered by Supabase Realtime—never refresh to see a teammate's changes.
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS, Shadcn UI
-- **Icons**: Lucide React
+- **Styling**: Tailwind CSS & Framer Motion
+- **UI Components**: Shadcn UI & Lucide React Icons
 - **State Management**: Zustand
-- **Data Fetching**: React Query
+- **Database & Auth**: Supabase (PostgreSQL)
 
-## Folder Structure
+## 📁 Folder Structure
 
-```
+```text
 src/
-├── app/                  # Next.js app router pages and layouts
-│   └── dashboard/        # Dashboard feature routes (Projects, Workspace, Team, etc.)
+├── app/                  # Next.js App Router (Pages, API routes, Layouts)
+│   ├── (auth)/           # Authentication pages (Login, Register, Reset)
+│   └── dashboard/        # Protected application routes
 ├── components/           # Reusable React components
-│   ├── dashboard/        # Feature-specific dashboard components
-│   ├── layout/           # Layout components (Sidebar, Navbar)
-│   ├── shared/           # Reusable UI elements (Button, Modal, etc.)
-│   └── ui/               # Base UI components (Shadcn)
-├── lib/                  # Utility functions
-├── hooks/                # Custom React hooks
+│   ├── auth/             # Permission Guards and auth forms
+│   ├── kanban/           # Drag-and-drop board components
+│   ├── layout/           # Sidebar, Navbar, and Protected Layout wrappers
+│   ├── shared/           # Reusable UI elements (Logo, Loading Spinners)
+│   └── ui/               # Base Shadcn UI components
+├── features/             # Feature-based logic and form components
+├── hooks/                # Custom React hooks (Data fetching, Permissions, Auth)
+├── lib/                  # Utilities (Supabase client, Tailwind merger)
+├── services/             # Database and API services
 ├── store/                # Global state (Zustand)
-└── types/                # TypeScript type definitions
+└── types/                # TypeScript interfaces and type definitions
 ```
 
-## Installation
+## 🚀 Getting Started
 
-1. Clone the repository:
+### Prerequisites
+
+You will need a Supabase project set up. Ensure you have your `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` ready.
+
+### Installation
+
+1. **Clone the repository:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/yourusername/FlowForge.git
    cd FlowForge
    ```
 
-2. Install dependencies:
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. Set up your environment variables (copy `.env.example` to `.env.local`).
+3. **Set up environment variables:**
+   Copy the example environment file and add your Supabase credentials:
+   ```bash
+   cp .env.example .env.local
+   ```
+   Open `.env.local` and fill in:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+   ```
 
-4. Start the development server:
+4. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. **Open the application:**
+   Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🛡️ CI/CD & Production
+
+The repository is configured with a GitHub Actions CI pipeline (`.github/workflows/ci.yml`) that validates the build on every push. For production deployment:
+1. Push your code to GitHub.
+2. Import the repository into **Vercel**.
+3. Add the Supabase environment variables in the Vercel project settings.
+4. Deploy!
+
+---
+
+<div align="center">
+  <i>Built with modern web technologies to forge a better workflow.</i>
+</div>

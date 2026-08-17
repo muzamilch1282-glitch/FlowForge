@@ -22,7 +22,7 @@ function NavItemLink({ item, collapsed }: { item: NavItem; collapsed: boolean })
       className={cn(
         'group relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
           isActive
-            ? 'bg-secondary/60 text-foreground font-semibold'
+            ? 'bg-primary/10 text-primary font-semibold'
             : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40',
         collapsed && 'justify-center px-2 py-2'
       )}
@@ -69,7 +69,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'hidden lg:flex flex-col border-r border-border/40 bg-[#FBFBFC] dark:bg-card transition-all duration-200',
+        'hidden lg:flex flex-col border-r border-border/40 bg-sidebar dark:bg-sidebar transition-all duration-200',
         sidebarCollapsed ? 'w-[64px]' : 'w-[240px]'
       )}
     >
@@ -104,34 +104,12 @@ export function Sidebar() {
         </div>
       </nav>
       
-      {/* Bottom Settings / Profile */}
+      {/* Bottom Settings */}
       <div className="p-2 mt-auto space-y-0.5">
         <NavItemLink 
           item={{ title: 'Settings', href: '/dashboard/settings', icon: Settings }} 
           collapsed={sidebarCollapsed} 
         />
-        
-        {/* User Profile Block */}
-        {!sidebarCollapsed ? (
-          <Link href="/dashboard/settings" className="mt-2 flex items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-secondary/40 transition-colors">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
-              M
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[13px] font-medium leading-tight">Muhammad</span>
-              <span className="text-[11px] text-muted-foreground leading-tight">Account & Profile</span>
-            </div>
-          </Link>
-        ) : (
-          <Link href="/dashboard/settings" className="mt-2 group relative flex justify-center items-center rounded-md p-1.5 hover:bg-secondary/40 transition-colors">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[9px] font-bold text-primary">
-              M
-            </div>
-            <div className="absolute left-full ml-2 hidden rounded-md bg-popover px-2 py-1 text-xs font-medium text-popover-foreground shadow-md group-hover:block z-50 whitespace-nowrap">
-              Account & Profile
-            </div>
-          </Link>
-        )}
       </div>
 
     </aside>

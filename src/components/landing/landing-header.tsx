@@ -73,7 +73,7 @@ export function LandingHeader() {
               Log in
             </Link>
             <Link
-              href="/signup"
+              href="/register"
               className="bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-sm font-semibold py-2 px-5 rounded-full transition-all duration-300 shadow-sm active:scale-95"
             >
               Get Started
@@ -120,7 +120,7 @@ export function LandingHeader() {
             Log in
           </Link>
           <Link
-            href="/signup"
+            href="/register"
             className="bg-[var(--primary)] text-white text-base font-semibold py-3 px-4 rounded-lg text-center mt-2 shadow-sm active:scale-95 transition-transform"
           >
             Get Started

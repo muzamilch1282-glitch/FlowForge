@@ -50,7 +50,7 @@ export function LandingProductShowcase() {
 
         <div className="absolute top-[-4%] left-[60%] z-10 hidden lg:block animate-[bounce_5.5s_infinite_ease-in-out]">
           <div className="flex items-center gap-2 bg-background border border-border shadow-md rounded-full px-4 py-2 text-sm font-semibold text-foreground">
-            <BarChart2 className="h-4 w-4 text-blue-500" /> Analytics
+            <BarChart2 className="h-4 w-4 text-orange-500" /> Analytics
           </div>
         </div>
 
@@ -102,7 +102,7 @@ export function LandingProductShowcase() {
                   Favorites
                 </div>
                 <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground font-medium text-sm hover:bg-accent hover:text-foreground transition-colors cursor-pointer">
-                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Q3 Marketing Launch
+                  <div className="w-2.5 h-2.5 rounded-full bg-orange-500" /> Q3 Marketing Launch
                 </div>
                 <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground font-medium text-sm hover:bg-accent hover:text-foreground transition-colors cursor-pointer">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Engineering Roadmap
@@ -124,7 +124,7 @@ export function LandingProductShowcase() {
                   </div>
                   <div className="flex items-center -space-x-2">
                     <Avatar className="h-8 w-8 border-2 border-background shadow-sm">
-                      <AvatarFallback className="text-xs bg-blue-100 text-blue-700">JD</AvatarFallback>
+                      <AvatarFallback className="text-xs bg-orange-100 text-orange-700">JD</AvatarFallback>
                     </Avatar>
                     <Avatar className="h-8 w-8 border-2 border-background shadow-sm">
                       <AvatarFallback className="text-xs bg-green-100 text-green-700">AL</AvatarFallback>
@@ -170,7 +170,7 @@ export function LandingProductShowcase() {
                   
                   <div className="bg-background rounded-xl border border-border p-4 shadow-sm hover:border-border/80 transition-colors cursor-pointer">
                     <div className="flex justify-between items-start mb-2">
-                      <Badge variant="outline" className="text-xs font-medium bg-blue-50 text-blue-700 border-blue-200">Frontend</Badge>
+                      <Badge variant="outline" className="text-xs font-medium bg-orange-50 text-orange-700 border-orange-200">Frontend</Badge>
                       <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <h3 className="font-medium text-sm text-foreground mb-3">Migrate to Next.js App Router</h3>
@@ -178,7 +178,7 @@ export function LandingProductShowcase() {
                       <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1"><CheckSquare className="h-3.5 w-3.5" /> 0/12</span>
                       </div>
-                      <Avatar className="h-6 w-6"><AvatarFallback className="text-[10px] bg-blue-100 text-blue-700">JD</AvatarFallback></Avatar>
+                      <Avatar className="h-6 w-6"><AvatarFallback className="text-[10px] bg-orange-100 text-orange-700">JD</AvatarFallback></Avatar>
                     </div>
                   </div>
 
@@ -224,7 +224,7 @@ export function LandingProductShowcase() {
                       </div>
                       <div className="flex -space-x-1.5">
                         <Avatar className="h-6 w-6 border-2 border-background"><AvatarFallback className="text-[10px] bg-green-100 text-green-700">AL</AvatarFallback></Avatar>
-                        <Avatar className="h-6 w-6 border-2 border-background"><AvatarFallback className="text-[10px] bg-blue-100 text-blue-700">JD</AvatarFallback></Avatar>
+                        <Avatar className="h-6 w-6 border-2 border-background"><AvatarFallback className="text-[10px] bg-orange-100 text-orange-700">JD</AvatarFallback></Avatar>
                       </div>
                     </div>
                   </div>

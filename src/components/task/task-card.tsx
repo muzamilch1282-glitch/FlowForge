@@ -71,7 +71,7 @@ export function TaskCard({ task, project, onEdit, onDelete, onView }: TaskCardPr
             
             {showDropdown && (
               <div className="absolute right-0 top-full z-10 mt-1 w-36 rounded-md border border-border bg-popover py-1 shadow-lg">
-                {(isAdmin() || task.assigned_to === user?.id) && (
+                {hasPermission(PERMISSIONS.TASK_EDIT) && (
                   <button 
                     onClick={handleEdit}
                     className="flex w-full items-center px-3 py-1.5 text-sm text-foreground hover:bg-secondary transition-colors"

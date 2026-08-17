@@ -115,9 +115,7 @@ export const teamService = {
         user_id: user.id,
         type: 'member_invited',
         title: 'Workspace Invitation',
-        message: `You have been invited to join ${workspaceName} as an ${role}.`,
-        entity_type: 'workspace',
-        entity_id: workspace_id
+        message: `You have been invited to join ${workspaceName} as an ${role}.`
       });
     } catch (notifError) {
       console.error('Failed to create notification for invited member:', notifError);

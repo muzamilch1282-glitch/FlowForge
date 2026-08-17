@@ -1,17 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { Search, Bot } from 'lucide-react';
-import { Breadcrumbs, Logo } from '@/components/shared';
+import { Search } from 'lucide-react';
+import { Breadcrumbs, Logo, ThemeToggle } from '@/components/shared';
 import { MobileSidebar } from './mobile-sidebar';
 import { useRouter } from 'next/navigation';
-import { useAppStore } from '@/store';
-import { Button } from '@/components/shared';
 
 export function TopNavbar() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = React.useState('');
-  const { setAiAssistantOpen } = useAppStore();
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
@@ -52,15 +49,7 @@ export function TopNavbar() {
 
         {/* Right: Actions */}
         <div className="flex items-center justify-end flex-1">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setAiAssistantOpen(true)}
-            className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary"
-            aria-label="Open AI Assistant"
-          >
-            <Bot className="h-4 w-4" />
-          </Button>
+          <ThemeToggle />
         </div>
       </header>
     </>

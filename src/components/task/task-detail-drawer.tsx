@@ -19,8 +19,7 @@ import { toast } from 'sonner';
 import { useComments } from '@/hooks/useComments';
 import { useAttachments } from '@/hooks/useAttachments';
 import { useAuth } from '@/hooks/useAuth';
-
-import { useTasks } from '@/hooks/useTasks';
+import { useTasks, useTasksByProject } from '@/hooks/useTasks';
 import { useTeam } from '@/hooks/useTeam';
 import {
   DropdownMenu,
@@ -41,12 +40,20 @@ export function TaskDetailDrawer({ task, project, isOpen, onClose }: TaskDetailD
   const { user } = useAuth();
   
   // Use tasks hook for updating
-  const { updateTask } = useTasks(project?.id || '');
+  const { updateTask } = useTasks();
+  const { data: projectTasks = [] } = useTasksByProject(project?.id || '');
   const { members } = useTeam(project?.workspace_id);
+
+  const currentUserRole = React.useMemo(() => {
+    return members.find(m => m.user_id === user?.id)?.role || 'member';
+  }, [members, user?.id]);
+  const canEditTask = currentUserRole === 'admin';
 
   const handleUpdate = (updates: Partial<Task>) => {
     if (!task) return;
-    updateTask({ id: task.id, data: updates });
+    const data = { ...updates } as any;
+    if (data.description === null) data.description = '';
+    updateTask({ id: task.id, data });
   };
   
   // State for comments and attachments
@@ -135,12 +142,16 @@ export function TaskDetailDrawer({ task, project, isOpen, onClose }: TaskDetailD
               <input 
                 type="text" 
                 defaultValue={task.title}
+                disabled={!canEditTask}
                 onBlur={(e) => {
-                  if (e.target.value !== task.title) {
+                  if (e.target.value !== task.title && canEditTask) {
                     handleUpdate({ title: e.target.value });
                   }
                 }}
-                className="w-full text-3xl font-bold bg-transparent border-none outline-none placeholder:text-muted-foreground/40 text-foreground resize-none focus:ring-0 p-0"
+                className={cn(
+                  "w-full text-3xl font-bold bg-transparent border-none outline-none placeholder:text-muted-foreground/40 text-foreground resize-none focus:ring-0 p-0",
+                  !canEditTask && "opacity-80 cursor-not-allowed"
+                )}
                 placeholder="Task title"
               />
             </div>
@@ -154,7 +165,7 @@ export function TaskDetailDrawer({ task, project, isOpen, onClose }: TaskDetailD
                     <Badge variant="outline" className={cn(
                       "font-medium text-xs h-6 px-2.5 border-transparent bg-secondary/50 cursor-pointer hover:bg-secondary transition-colors",
                       task.status === 'completed' && "bg-emerald-500/10 text-emerald-600",
-                      task.status === 'in-progress' && "bg-blue-500/10 text-blue-600",
+                      task.status === 'in-progress' && "bg-orange-500/10 text-orange-600",
                     )}>
                       {task.status.replace('-', ' ')}
                     </Badge>
@@ -249,6 +260,7 @@ export function TaskDetailDrawer({ task, project, isOpen, onClose }: TaskDetailD
                   </DropdownMenuContent>
                 </DropdownMenu>
               </PropertyRow>
+
               
             </div>
 
@@ -256,12 +268,17 @@ export function TaskDetailDrawer({ task, project, isOpen, onClose }: TaskDetailD
             <div className="pt-2">
               <textarea 
                 value={descValue}
+                disabled={!canEditTask}
                 onChange={(e) => {
+                  if (!canEditTask) return;
                   setDescValue(e.target.value);
                   setIsEditingDesc(true);
                 }}
-                className="w-full bg-transparent border-none outline-none resize-none text-[15px] text-foreground/90 placeholder:text-muted-foreground/40 min-h-[100px] p-2 hover:bg-secondary/20 focus:bg-secondary/20 rounded-md transition-colors"
-                placeholder="Add a description..."
+                className={cn(
+                  "w-full bg-transparent border-none outline-none resize-none text-[15px] text-foreground/90 placeholder:text-muted-foreground/40 min-h-[100px] p-2 hover:bg-secondary/20 focus:bg-secondary/20 rounded-md transition-colors",
+                  !canEditTask && "opacity-80 cursor-not-allowed hover:bg-transparent focus:bg-transparent"
+                )}
+                placeholder={canEditTask ? "Add a description..." : "No description provided."}
               />
               {isEditingDesc && descValue !== (task.description || '') && (
                 <div className="flex gap-2 mt-2">

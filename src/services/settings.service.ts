@@ -120,4 +120,49 @@ export const settingsService = {
     const { error } = await supabase.auth.signOut({ scope: 'global' });
     if (error) throw new Error(error.message);
   },
+
+  // ─── Account Deletion ──────────────────────────────────────
+  async deleteAccountData(userId: string) {
+    const supabase = getSupabaseClient();
+    
+    // 1. Delete all projects owned by the user
+    const { error: projectsError } = await supabase
+      .from('projects')
+      .delete()
+      .eq('owner_id', userId);
+    if (projectsError) console.error('Error deleting projects:', projectsError);
+
+    // 2. Delete all workspaces owned by the user
+    const { error: workspacesError } = await supabase
+      .from('workspaces')
+      .delete()
+      .eq('owner_id', userId);
+    if (workspacesError) console.error('Error deleting workspaces:', workspacesError);
+
+    // 3. Delete notification preferences
+    const { error: prefsError } = await supabase
+      .from('notification_preferences')
+      .delete()
+      .eq('user_id', userId);
+    if (prefsError) console.error('Error deleting preferences:', prefsError);
+
+    // 4. Delete profile
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
+    if (profileError) throw new Error(`Failed to delete profile: ${profileError.message}`);
+
+    // 5. Completely purge the user from auth.users via RPC
+    const { error: rpcError } = await supabase.rpc('delete_user_account');
+    if (rpcError) {
+      const errMsg = (rpcError as any).message || String(rpcError);
+      const errCode = (rpcError as any).code || 'UNKNOWN_CODE';
+      console.error('RPC Error details:', errMsg, errCode);
+      throw new Error(`Database Error (${errCode}): ${errMsg}`);
+    }
+
+    // 6. Sign out
+    await this.signOut();
+  },
 };

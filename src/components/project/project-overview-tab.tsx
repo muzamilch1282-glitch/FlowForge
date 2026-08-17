@@ -14,7 +14,7 @@ interface ProjectOverviewTabProps {
   workspaceId: string;
 }
 
-export function ProjectOverviewTab({ project, tasks }: ProjectOverviewTabProps) {
+export function ProjectOverviewTab({ project, tasks, workspaceId }: ProjectOverviewTabProps) {
   const completedTasks = tasks.filter(t => t.status === 'completed').length;
   const totalTasks = tasks.length;
   const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -137,7 +137,7 @@ export function ProjectOverviewTab({ project, tasks }: ProjectOverviewTabProps) 
             </h3>
           </div>
           <div className="flex-1">
-            <ProjectMembers size="md" max={5} />
+            <ProjectMembers size="md" max={5} workspaceId={workspaceId} />
           </div>
         </div>
       </div>

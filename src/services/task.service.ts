@@ -1,7 +1,8 @@
-import { Task, CreateTaskDTO, UpdateTaskDTO } from '../types/task';
+import { Task, CreateTaskDTO, UpdateTaskDTO, TaskDependency } from '../types/task';
 import { getSupabaseClient } from '../lib/supabase';
 import { activityService } from './activity.service';
 import { notificationService } from './notification.service';
+import { toast } from 'sonner';
 
 export const taskService = {
   async getTasks(): Promise<Task[]> {
@@ -21,6 +22,18 @@ export const taskService = {
       .from('tasks')
       .select('*')
       .eq('project_id', projectId)
+      .order('updated_at', { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data || [];
+  },
+
+  async getTasksByWorkspace(workspaceId: string): Promise<Task[]> {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*, projects!inner(workspace_id)')
+      .eq('projects.workspace_id', workspaceId)
       .order('updated_at', { ascending: false });
 
     if (error) throw new Error(error.message);
@@ -68,9 +81,7 @@ export const taskService = {
               user_id: task.assigned_to,
               type: 'task_assigned',
               title: 'Task Assigned',
-              message: `You were assigned to task: ${data.title}`,
-              entity_type: 'task',
-              entity_id: data.id
+              message: `You were assigned to task: ${data.title}`
             });
           }
           // --- AUTOMATION ENGINE HOOK ---
@@ -122,27 +133,35 @@ export const taskService = {
     // Log activity
     (async () => {
       try {
-        const { data: project } = await supabase.from('projects').select('workspace_id').eq('id', data.project_id).single();
-        if (project) {
-          if (updates.status === 'completed' && previousTask?.status !== 'completed') {
-            await activityService.createActivity({
-              workspace_id: project.workspace_id,
-              project_id: data.project_id,
-              task_id: data.id,
-              action: 'completed',
-              entity_type: 'task',
-              entity_name: data.title
-            });
-          } else {
-            await activityService.createActivity({
-              workspace_id: project.workspace_id,
-              project_id: data.project_id,
-              task_id: data.id,
-              action: 'updated',
-              entity_type: 'task',
-              entity_name: data.title
-            });
-          }
+        const { data: project, error: projectError } = await supabase.from('projects').select('workspace_id').eq('id', data.project_id).single();
+        if (projectError) {
+          toast.error(`Activity log failed: Project query error ${projectError.message}`);
+          return;
+        }
+        if (!project) {
+          toast.error(`Activity log failed: Project not found for id ${data.project_id}`);
+          return;
+        }
+
+        if (updates.status === 'completed' && previousTask?.status !== 'completed') {
+          await activityService.createActivity({
+            workspace_id: project.workspace_id,
+            project_id: data.project_id,
+            task_id: data.id,
+            action: 'completed',
+            entity_type: 'task',
+            entity_name: data.title
+          });
+        } else {
+          await activityService.createActivity({
+            workspace_id: project.workspace_id,
+            project_id: data.project_id,
+            task_id: data.id,
+            action: 'updated',
+            entity_type: 'task',
+            entity_name: data.title
+          });
+        }
 
           // If assignee changed
           if (updates.assigned_to && updates.assigned_to !== previousTask?.assigned_to) {
@@ -150,9 +169,7 @@ export const taskService = {
               user_id: updates.assigned_to,
               type: 'task_assigned',
               title: 'Task Assigned',
-              message: `You were assigned to task: ${data.title}`,
-              entity_type: 'task',
-              entity_id: data.id
+              message: `You were assigned to task: ${data.title}`
             });
           }
           // --- AUTOMATION ENGINE HOOK ---
@@ -184,7 +201,6 @@ export const taskService = {
           } catch (e) {
             console.error('Failed to run automations for task update', e);
           }
-        }
       } catch (e) {
         console.error('Failed to log activity for task update', e);
       }
@@ -221,5 +237,38 @@ export const taskService = {
         entity_name: task.title
       }).catch(console.error);
     }
+  },
+
+  async getTaskDependencies(taskId: string): Promise<TaskDependency[]> {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('task_dependencies')
+      .select('*, depends_on_task:tasks!task_dependencies_depends_on_task_id_fkey(*), dependent_task:tasks!task_dependencies_task_id_fkey(*)')
+      .or(`task_id.eq.${taskId},depends_on_task_id.eq.${taskId}`);
+
+    if (error) throw new Error(error.message);
+    return data || [];
+  },
+
+  async addDependency(taskId: string, dependsOnTaskId: string): Promise<TaskDependency> {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('task_dependencies')
+      .insert({ task_id: taskId, depends_on_task_id: dependsOnTaskId })
+      .select('*, depends_on_task:tasks!task_dependencies_depends_on_task_id_fkey(*), dependent_task:tasks!task_dependencies_task_id_fkey(*)')
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
+  async removeDependency(id: string): Promise<void> {
+    const supabase = getSupabaseClient();
+    const { error } = await supabase
+      .from('task_dependencies')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw new Error(error.message);
   }
 };

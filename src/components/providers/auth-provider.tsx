@@ -48,8 +48,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("Error getting session:", error);
+      }
       fetchProfileAndSetState(session);
+    }).catch((error) => {
+      console.error("Caught error in getSession:", error);
+      fetchProfileAndSetState(null);
     });
 
     // Listen for auth changes

@@ -6,10 +6,16 @@ interface PermissionGuardProps {
   permission: Permission;
   children: React.ReactNode;
   fallback?: React.ReactNode;
+  workspaceId?: string;
 }
 
-export function PermissionGuard({ permission, children, fallback = null }: PermissionGuardProps) {
-  const { hasPermission, isLoading } = usePermissions();
+export function PermissionGuard({
+  permission,
+  children,
+  fallback = null,
+  workspaceId
+}: PermissionGuardProps) {
+  const { hasPermission, isLoading } = usePermissions(workspaceId);
 
   if (isLoading) {
     return null; // Or a subtle loading skeleton if preferred

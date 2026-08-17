@@ -7,36 +7,43 @@ export const commentService = {
   async getComments(taskId: string): Promise<TaskComment[]> {
     const { data, error } = await supabase
       .from('task_comments')
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
+      .select('*')
       .eq('task_id', taskId)
       .order('created_at', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase raw error (getComments):', JSON.stringify(error, null, 2));
+      throw new Error(`Supabase Error ${error.code}: ${error.message} - ${error.details || ''}`);
+    }
     
-    // Transform single profile array/object into the expected UserProfile structure if necessary
+    // Manually fetch profiles to bypass relation cache issues
+    const userIds = [...new Set(data.map((c: any) => c.user_id).filter(Boolean))];
+    const { data: profiles } = userIds.length > 0 
+      ? await supabase.from('profiles').select('*').in('id', userIds)
+      : { data: [] };
+    const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p]));
+    
     return data.map((comment: any) => ({
       ...comment,
-      profile: Array.isArray(comment.profile) ? comment.profile[0] : comment.profile
+      profile: profileMap[comment.user_id] || null
     })) as TaskComment[];
   },
 
   async getCommentById(id: string): Promise<TaskComment> {
     const { data, error } = await supabase
       .from('task_comments')
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
+      .select('*')
       .eq('id', id)
       .single();
 
     if (error) throw error;
+
+    // Manually fetch profile to avoid relation cache issues
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user_id).single();
+
     return {
       ...data,
-      profile: Array.isArray(data.profile) ? data.profile[0] : data.profile
+      profile: profile || null
     } as TaskComment;
   },
 
@@ -51,10 +58,7 @@ export const commentService = {
         user_id: userData.user.id,
         comment: payload.comment
       })
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
+      .select('*')
       .single();
 
     if (error) throw error;
@@ -81,9 +85,7 @@ export const commentService = {
                 user_id: task.assigned_to,
                 type: 'comment_added',
                 title: 'New Comment',
-                message: `New comment on task: ${task.title}`,
-                entity_type: 'task',
-                entity_id: payload.task_id
+                message: `New comment on task: ${task.title}`
               });
             }
           }
@@ -93,9 +95,12 @@ export const commentService = {
       }
     })();
 
+    // Manually fetch profile
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user_id).single();
+
     return {
       ...data,
-      profile: Array.isArray(data.profile) ? data.profile[0] : data.profile
+      profile: profile || null
     } as TaskComment;
   },
 
@@ -107,16 +112,16 @@ export const commentService = {
         updated_at: new Date().toISOString()
       })
       .eq('id', payload.id)
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
+      .select('*')
       .single();
 
     if (error) throw error;
+    // Manually fetch profile
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user_id).single();
+
     return {
       ...data,
-      profile: Array.isArray(data.profile) ? data.profile[0] : data.profile
+      profile: profile || null
     } as TaskComment;
   },
 

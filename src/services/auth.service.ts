@@ -116,6 +116,38 @@ export const authService = {
   },
 
   /**
+   * Update user password
+   */
+  updatePassword: async (newPassword: string) => {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
+
+  /**
+   * Send a password reset email
+   */
+  resetPasswordForEmail: async (email: string) => {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/update-password`,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
+
+  /**
    * Logout current user
    */
   logout: async () => {
@@ -126,4 +158,17 @@ export const authService = {
       throw error;
     }
   },
+
+  /**
+   * Update Notification Preferences in user_metadata
+   */
+  updateNotificationPreferences: async (preferences: any) => {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase.auth.updateUser({
+      data: { notification_preferences: preferences }
+    });
+
+    if (error) throw error;
+    return data;
+  }
 };

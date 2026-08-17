@@ -7,8 +7,6 @@ export interface AppNotification {
   type: NotificationType;
   title: string;
   message: string;
-  entity_type: EntityType;
-  entity_id: string;
   is_read: boolean;
   created_at: string;
 }
@@ -18,6 +16,4 @@ export interface CreateNotificationDTO {
   type: NotificationType;
   title: string;
   message: string;
-  entity_type: EntityType;
-  entity_id: string;
 }

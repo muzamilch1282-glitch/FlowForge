@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { Mail, ArrowRight, Loader2, ArrowLeft } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,47 +12,67 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
-const loginSchema = z.object({
+const forgotPasswordSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(1, 'Password is required'),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
-export function LoginForm() {
-  const router = useRouter();
+export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+  } = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: '' },
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: ForgotPasswordFormValues) => {
     try {
       setIsLoading(true);
-      await authService.loginWithEmail(data.email, data.password);
-      toast.success('Successfully logged in!');
-      router.push('/dashboard');
+      await authService.resetPasswordForEmail(data.email);
+      setIsSubmitted(true);
+      toast.success('Password reset link sent!');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to login. Please try again.');
+      toast.error(error.message || 'Failed to send reset link. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  if (isSubmitted) {
+    return (
+      <div className="space-y-6 text-center">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Check your email
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            We've sent a password reset link to your email address. Please check your inbox and spam folder.
+          </p>
+        </div>
+        <Link href="/login" className="inline-block mt-4">
+          <Button variant="outline" className="w-full">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to login
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-1 text-center">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Welcome back
+          Reset password
         </h1>
         <p className="text-sm text-muted-foreground">
-          Enter your credentials to access your account
+          Enter your email address and we'll send you a link to reset your password.
         </p>
       </div>
 
@@ -78,34 +97,6 @@ export function LoginForm() {
           )}
         </div>
 
-        {/* Password */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link
-              href="/forgot-password"
-              className="text-xs text-primary hover:text-primary/80 hover:underline transition-colors"
-            >
-              Forgot password?
-            </Link>
-          </div>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              className="pl-10"
-              aria-invalid={!!errors.password}
-              disabled={isLoading}
-              {...register('password')}
-            />
-          </div>
-          {errors.password && (
-            <p className="text-xs text-destructive">{errors.password.message}</p>
-          )}
-        </div>
-
         {/* Submit */}
         <Button
           type="submit"
@@ -117,25 +108,22 @@ export function LoginForm() {
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <>
-              Sign In
+              Send Reset Link
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </>
           )}
         </Button>
       </form>
 
-
-
-      {/* Register link */}
-      <p className="text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{' '}
+      <div className="text-center">
         <Link
-          href="/register"
-          className="font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
+          href="/login"
+          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors inline-flex items-center"
         >
-          Sign up
+          <ArrowLeft className="mr-2 h-3.5 w-3.5" />
+          Back to login
         </Link>
-      </p>
+      </div>
     </div>
   );
 }

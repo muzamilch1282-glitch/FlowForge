@@ -10,31 +10,36 @@ import { format, parseISO } from 'date-fns';
 import { usePermissions } from '@/hooks/usePermissions';
 import { PERMISSIONS } from '@/lib/permissions';
 
-interface ProjectCardProps {
+export interface ProjectCardProps {
   project: Project;
   workspace?: Workspace;
   onEdit?: (project: Project) => void;
   onDelete?: (project: Project) => void;
 }
 
+import { useTasks } from '@/hooks/useTasks';
+
 export function ProjectCard({ project, workspace, onEdit, onDelete }: ProjectCardProps) {
   const { hasPermission } = usePermissions();
+  const { tasks } = useTasks();
   
-  // Generate a dummy progress based on the id (deterministic)
-  const dummyProgress = React.useMemo(() => {
-    const sum = project.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return sum % 100;
-  }, [project.id]);
+  // Calculate real progress based on task completion
+  const progressPercent = React.useMemo(() => {
+    const projectTasks = tasks.filter((t: any) => t.project_id === project.id);
+    const totalTasks = projectTasks.length;
+    const completedTasks = projectTasks.filter((t: any) => t.status === 'completed').length;
+    return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  }, [tasks, project.id]);
 
   const statusColors = {
-    'active': 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
-    'on-hold': 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+    'active': 'bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400',
+    'on-hold': 'bg-stone-100 text-stone-700 dark:bg-stone-500/10 dark:text-stone-400',
     'completed': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
   };
 
   const priorityColors = {
-    'low': 'bg-slate-100 text-slate-700 dark:bg-slate-500/10 dark:text-slate-400',
-    'medium': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400',
+    'low': 'bg-stone-100 text-stone-700 dark:bg-stone-500/10 dark:text-stone-400',
+    'medium': 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
     'high': 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400',
   };
 
@@ -87,11 +92,11 @@ export function ProjectCard({ project, workspace, onEdit, onDelete }: ProjectCar
           </Badge>
         </div>
 
-        <ProjectProgress value={dummyProgress} className="mt-auto" />
+        <ProjectProgress value={progressPercent} className="mt-auto" />
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-border bg-muted/20 px-5 py-3">
-        <ProjectMembers max={3} size="sm" />
+        <ProjectMembers max={3} size="sm" workspaceId={project.workspace_id} />
         
         {project.end_date && (
           <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground shrink-0">

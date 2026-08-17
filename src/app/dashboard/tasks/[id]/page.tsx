@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTaskById } from '@/hooks/useTasks';
 import { useProjectById } from '@/hooks/useProjects';
+import { useTeam } from '@/hooks/useTeam';
 import { Button } from '@/components/shared';
 import { TaskStatus } from '@/components/task/task-status';
 import { PriorityBadge } from '@/components/task/priority-badge';
@@ -23,6 +24,10 @@ export default function TaskDetailsPage() {
   
   const { data: task, isLoading: taskLoading, error } = useTaskById(taskId);
   const { data: project, isLoading: projectLoading } = useProjectById(task?.project_id || '');
+  const { members } = useTeam(project?.workspace_id);
+
+  const assignedMember = members.find(m => m.user_id === task?.assigned_to);
+  const assigneeName = assignedMember?.profile?.full_name || 'Assigned';
 
   if (taskLoading || projectLoading) {
     return (
@@ -110,11 +115,15 @@ export default function TaskDetailsPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Assignee</span>
                 <div className="flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs text-muted-foreground">
-                    <User2 className="h-3 w-3" />
-                  </div>
+                  {assignedMember?.profile?.avatar_url ? (
+                    <img src={assignedMember.profile.avatar_url} alt={assigneeName} className="h-6 w-6 rounded-full object-cover" />
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs text-muted-foreground">
+                      <User2 className="h-3 w-3" />
+                    </div>
+                  )}
                   <span className="text-sm font-medium">
-                    {task.assigned_to ? 'Assigned' : 'Unassigned'}
+                    {task.assigned_to ? assigneeName : 'Unassigned'}
                   </span>
                 </div>
               </div>

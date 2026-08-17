@@ -1,23 +1,35 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { UserPlus } from 'lucide-react';
+import { useTeam } from '@/hooks/useTeam';
 
 interface ProjectMembersProps {
   max?: number;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  workspaceId?: string;
 }
 
-const DUMMY_MEMBERS = [
-  { id: '1', name: 'Alice Smith', color: 'bg-rose-500' },
-  { id: '2', name: 'Bob Johnson', color: 'bg-blue-500' },
-  { id: '3', name: 'Charlie Davis', color: 'bg-emerald-500' },
-  { id: '4', name: 'Diana Prince', color: 'bg-amber-500' },
+const COLORS = [
+  'bg-rose-500', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500',
+  'bg-indigo-500', 'bg-purple-500', 'bg-pink-500', 'bg-cyan-500'
 ];
 
-export function ProjectMembers({ max = 3, className, size = 'sm' }: ProjectMembersProps) {
-  const displayMembers = DUMMY_MEMBERS.slice(0, max);
-  const remainingCount = Math.max(0, DUMMY_MEMBERS.length - max);
+export function ProjectMembers({ max = 3, className, size = 'sm', workspaceId }: ProjectMembersProps) {
+  const { members } = useTeam(workspaceId);
+
+  if (!members || members.length === 0) {
+    return null;
+  }
+
+  const displayMembers = members.slice(0, max).map((m, index) => {
+    return {
+      id: m.id,
+      name: m.profile?.full_name || m.profile?.email || 'User',
+      color: COLORS[index % COLORS.length]
+    };
+  });
+  
+  const remainingCount = Math.max(0, members.length - max);
 
   const sizeClasses = {
     sm: 'h-6 w-6 text-[10px]',
@@ -39,7 +51,7 @@ export function ProjectMembers({ max = 3, className, size = 'sm' }: ProjectMembe
             style={{ zIndex: 10 - i }}
             title={member.name}
           >
-            {member.name.charAt(0)}
+            {member.name.charAt(0).toUpperCase()}
           </div>
         ))}
         
@@ -54,13 +66,6 @@ export function ProjectMembers({ max = 3, className, size = 'sm' }: ProjectMembe
           </div>
         )}
       </div>
-      
-      <button className={cn(
-        "ml-2 flex items-center justify-center rounded-full border border-dashed border-border bg-transparent text-muted-foreground hover:border-primary hover:text-primary transition-colors",
-        sizeClasses[size]
-      )}>
-        <UserPlus className="h-3/5 w-3/5" />
-      </button>
     </div>
   );
 }

@@ -15,7 +15,7 @@ import { KanbanBoard } from '@/components/kanban/kanban-board';
 import { ProjectHeader } from '@/components/project/project-header';
 import { ProjectActivityTab } from '@/components/project/project-activity-tab';
 import { ProjectAnalyticsTab } from '@/components/project/project-analytics-tab';
-import { TimelineBoard } from '@/components/timeline/timeline-board';
+import { TimelineView } from '@/components/project/timeline-view';
 import { TaskTable } from '@/components/task/task-table';
 import { TaskDetailDrawer } from '@/components/task/task-detail-drawer';
 import { TaskModal } from '@/components/task/task-modal';
@@ -32,7 +32,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
   const { data: project, isLoading: isProjectLoading, error } = useProjectById(projectId);
   const { data: workspace, isLoading: isWorkspaceLoading } = useWorkspaceById(project?.workspace_id || '');
   const { data: tasks, isLoading: isTasksLoading } = useTasksByProject(projectId);
-  const { updateTask, deleteTask } = useTasks();
+  const { createTask, updateTask, deleteTask, isCreating, isUpdating } = useTasks();
 
   const [activeTab, setActiveTab] = React.useState<'overview' | 'board' | 'list' | 'timeline' | 'calendar' | 'analytics' | 'activity'>('overview');
   
@@ -81,6 +81,20 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
   const handleCreateNewTask = () => {
     setEditingTask(null);
     setIsModalOpen(true);
+  };
+
+  const handleSubmitTask = (data: any) => {
+    if (editingTask) {
+      updateTask(
+        { id: editingTask.id, data },
+        { onSuccess: () => setIsModalOpen(false) }
+      );
+    } else {
+      createTask(
+        { ...data, project_id: project?.id },
+        { onSuccess: () => setIsModalOpen(false) }
+      );
+    }
   };
 
   if (isProjectLoading || (project && isWorkspaceLoading) || isTasksLoading) {
@@ -185,7 +199,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
             {activeTab === 'timeline' && (
               <div className="h-[calc(100vh-280px)] min-h-[500px]">
-                <TimelineBoard tasks={tasks || []} projects={[project]} />
+                <TimelineView tasks={tasks || []} projects={[project]} />
               </div>
             )}
             
@@ -213,8 +227,8 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         onClose={() => setIsModalOpen(false)}
         task={editingTask}
         projects={[project]}
-        onSubmit={() => setIsModalOpen(false)}
-        isSubmitting={false}
+        onSubmit={handleSubmitTask}
+        isSubmitting={isCreating || isUpdating}
       />
 
       {isAutomationsOpen && workspace && (

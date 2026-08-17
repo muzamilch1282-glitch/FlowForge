@@ -16,6 +16,7 @@ import { Task, CreateTaskDTO, UpdateTaskDTO } from '@/types/task';
 import { isPast, isToday, isThisWeek, parseISO } from 'date-fns';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { PERMISSIONS } from '@/lib/permissions';
+import { useRouter } from 'next/navigation';
 
 export default function TasksPage() {
   const { 
@@ -154,9 +155,10 @@ export default function TasksPage() {
     setIsModalOpen(true);
   };
 
+  const router = useRouter();
+
   const handleView = (task: Task) => {
-    setViewingTask(task);
-    setIsDrawerOpen(true);
+    router.push(`/dashboard/tasks/${task.id}`);
   };
 
   const handleDelete = (task: Task) => {

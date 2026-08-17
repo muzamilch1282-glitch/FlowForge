@@ -21,6 +21,7 @@ import { ProfileSettings } from '@/components/settings/profile-settings';
 import { NotificationSettings } from '@/components/settings/notification-settings';
 import { AppearanceSettings } from '@/components/settings/appearance-settings';
 import { SecuritySettings } from '@/components/settings/security-settings';
+import { AccountSettings } from '@/components/settings/account-settings';
 
 // ─── Section Configuration ──────────────────────────────────
 
@@ -33,6 +34,7 @@ interface SettingsSection {
 
 const SETTINGS_SECTIONS: SettingsSection[] = [
   { id: 'profile', label: 'Profile', icon: UserCircle, description: 'Manage your personal information' },
+  { id: 'account', label: 'Account', icon: Shield, description: 'Account details and session management' },
   { id: 'workspace', label: 'Workspace', icon: Building2, description: 'Workspace configuration' },
   { id: 'team', label: 'Team', icon: Users, description: 'Manage team members' },
   { id: 'notifications', label: 'Notifications', icon: Bell, description: 'Manage notification preferences' },
@@ -45,6 +47,7 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
 function SettingsContent({ sectionId }: { sectionId: string }) {
   switch (sectionId) {
     case 'profile': return <ProfileSettings />;
+    case 'account': return <AccountSettings />;
     case 'notifications': return <NotificationSettings />;
     case 'appearance': return <AppearanceSettings />;
     case 'security': return <SecuritySettings />;

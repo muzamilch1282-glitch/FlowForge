@@ -54,23 +54,13 @@ export function KanbanTaskCard({ task, project }: KanbanTaskCardProps) {
   const attachmentCount = (task.id.length * 7) % 4;
   const hasDependency = task.id.length % 5 === 0;
 
-  if (isDragging) {
-    return (
-      <div 
-        ref={setNodeRef}
-        style={style}
-        className="h-[100px] rounded-lg border-2 border-primary bg-primary/10 opacity-50"
-      />
-    );
-  }
-
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -2 }}
+      whileHover={!isDragging ? { y: -2 } : undefined}
     >
       <div
         ref={setNodeRef}
@@ -78,8 +68,12 @@ export function KanbanTaskCard({ task, project }: KanbanTaskCardProps) {
         {...attributes}
         {...listeners}
         className={cn(
-          "group flex flex-col rounded-md border border-border/40 bg-card p-2.5 shadow-sm transition-all",
-          canEdit ? "cursor-grab active:cursor-grabbing hover:shadow hover:border-border/80" : "cursor-not-allowed opacity-80"
+          "group flex flex-col rounded-md border bg-card p-2.5 transition-all",
+          isDragging 
+            ? "rotate-2 scale-[1.03] shadow-xl z-50 opacity-90 cursor-grabbing border-primary" 
+            : "border-border/40 shadow-sm",
+          !isDragging && canEdit ? "cursor-grab active:cursor-grabbing hover:shadow hover:border-border/80" : "",
+          !isDragging && !canEdit ? "cursor-not-allowed opacity-80" : ""
         )}
       >
         <div className="flex items-start justify-between mb-2 gap-2">

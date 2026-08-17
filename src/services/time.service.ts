@@ -10,7 +10,25 @@ export const timeService = {
       .eq('task_id', taskId)
       .order('started_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', JSON.stringify(error, null, 2));
+      throw new Error(`Supabase Error ${error.code}: ${error.message}`);
+    }
+    return data as TimeEntry[];
+  },
+
+  // Get all time entries for multiple tasks
+  async getEntriesByTasks(taskIds: string[]): Promise<TimeEntry[]> {
+    if (taskIds.length === 0) return [];
+    const { data, error } = await supabase
+      .from('time_entries')
+      .select('*')
+      .in('task_id', taskIds);
+
+    if (error) {
+      console.error('Supabase error:', JSON.stringify(error, null, 2));
+      throw new Error(`Supabase Error ${error.code}: ${error.message}`);
+    }
     return data as TimeEntry[];
   },
 
@@ -26,7 +44,10 @@ export const timeService = {
       .is('ended_at', null)
       .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "multiple rows", which shouldn't happen due to unique index, but if no row it might error depending on how we call. maybeSingle handles no row well.
+    if (error && error.code !== 'PGRST116') {
+      console.error('Supabase error:', JSON.stringify(error, null, 2));
+      throw new Error(`Supabase Error ${error.code}: ${error.message}`);
+    }
     return data as TimeEntry | null;
   },
 
@@ -52,7 +73,10 @@ export const timeService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', JSON.stringify(error, null, 2));
+      throw new Error(`Supabase Error ${error.code}: ${error.message}`);
+    }
     return data as TimeEntry;
   },
 
@@ -80,7 +104,10 @@ export const timeService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', JSON.stringify(error, null, 2));
+      throw new Error(`Supabase Error ${error.code}: ${error.message}`);
+    }
     return data as TimeEntry;
   },
 
@@ -98,7 +125,10 @@ export const timeService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', JSON.stringify(error, null, 2));
+      throw new Error(`Supabase Error ${error.code}: ${error.message}`);
+    }
     return data as TimeEntry;
   },
 
@@ -112,7 +142,10 @@ export const timeService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', JSON.stringify(error, null, 2));
+      throw new Error(`Supabase Error ${error.code}: ${error.message}`);
+    }
     return data as TimeEntry;
   },
 
@@ -123,6 +156,9 @@ export const timeService = {
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', JSON.stringify(error, null, 2));
+      throw new Error(`Supabase Error ${error.code}: ${error.message}`);
+    }
   }
 };

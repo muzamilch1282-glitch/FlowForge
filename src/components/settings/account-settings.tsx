@@ -45,15 +45,26 @@ export function AccountSettings() {
     }
   };
 
-  const handleDeleteAccount = () => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
     if (!showDeleteConfirm) {
       setShowDeleteConfirm(true);
       return;
     }
     
-    // Simulate delete account for now
-    toast.error('Contact support to delete your account');
-    setShowDeleteConfirm(false);
+    if (!user) return;
+    
+    try {
+      setIsDeleting(true);
+      await settingsService.deleteAccountData(user.id);
+      toast.success('Your account data has been wiped.');
+      router.push('/login');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete account data');
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   const creationDate = user?.created_at 
@@ -146,8 +157,9 @@ export function AccountSettings() {
               variant={showDeleteConfirm ? "destructive" : "outline"}
               className={!showDeleteConfirm ? "text-destructive hover:bg-destructive hover:text-destructive-foreground border-destructive/30" : ""}
               onClick={handleDeleteAccount}
+              disabled={isDeleting}
             >
-              {showDeleteConfirm ? 'Yes, delete my account' : 'Delete Account'}
+              {isDeleting ? 'Deleting...' : (showDeleteConfirm ? 'Yes, delete my account' : 'Delete Account')}
             </Button>
           </div>
         </CardContent>

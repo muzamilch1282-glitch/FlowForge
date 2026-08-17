@@ -45,7 +45,7 @@ export default function TeamsPage() {
     isRemoving 
   } = useTeam(activeWorkspaceId);
 
-  const { isAdmin, canInviteMember, isLoading: permissionsLoading } = usePermissions();
+  const { isAdmin, canInviteMember, isLoading: permissionsLoading } = usePermissions(activeWorkspaceId);
 
   // Derived state for filtered members
   const filteredMembers = React.useMemo(() => {
@@ -87,8 +87,8 @@ export default function TeamsPage() {
         title="Team Management"
         description="Manage your team members and their roles."
       >
-        <PermissionGuard permission={PERMISSIONS.MEMBER_INVITE}>
-          <Link href="/dashboard/team/invite">
+        <PermissionGuard permission={PERMISSIONS.MEMBER_INVITE} workspaceId={activeWorkspaceId}>
+          <Link href={`/dashboard/team/invite?workspace=${activeWorkspaceId}`}>
             <Button disabled={!activeWorkspaceId} className="gap-2">
               <UserPlus className="h-4 w-4" />
               Invite Member
@@ -153,7 +153,7 @@ export default function TeamsPage() {
           </div>
         </div>
       ) : (
-        <EmptyMembers onInvite={() => router.push('/dashboard/team/invite')} isAdmin={isAdmin()} />
+        <EmptyMembers onInvite={() => router.push(`/dashboard/team/invite?workspace=${activeWorkspaceId}`)} isAdmin={isAdmin()} />
       )}
     </div>
   );

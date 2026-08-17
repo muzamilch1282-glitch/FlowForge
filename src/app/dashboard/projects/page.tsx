@@ -5,6 +5,7 @@ import { PageHeader, Button } from '@/components/shared';
 import { Plus } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
 import { useWorkspace } from '@/hooks/useWorkspace';
+import { useTasks } from '@/hooks/useTasks';
 import { ProjectGrid } from '@/components/project/project-grid';
 import { ProjectModal } from '@/components/project/project-modal';
 import { ProjectSearch } from '@/components/project/project-search';
@@ -25,6 +26,7 @@ export default function ProjectsPage() {
   } = useProjects();
   
   const { workspaces, isLoading: workspacesLoading } = useWorkspace();
+  const { tasks } = useTasks();
 
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedWorkspace, setSelectedWorkspace] = React.useState('all');
@@ -53,7 +55,25 @@ export default function ProjectsPage() {
       result = result.filter(p => p.workspace_id === selectedWorkspace);
     }
     if (selectedStatus !== 'all') {
-      result = result.filter(p => p.status === selectedStatus);
+      result = result.filter(p => {
+        if (selectedStatus === 'completed') {
+          // Explicitly completed, or has tasks and all are completed (100% progress)
+          if (p.status === 'completed') return true;
+          const pTasks = tasks.filter((t: any) => t.project_id === p.id);
+          if (pTasks.length > 0 && pTasks.every((t: any) => t.status === 'completed')) return true;
+          return false;
+        }
+        
+        // For 'active' or 'on-hold', we might want to exclude projects that are 100% completed
+        // so they don't show up in both tabs.
+        if (selectedStatus === 'active' || selectedStatus === 'on-hold') {
+          const pTasks = tasks.filter((t: any) => t.project_id === p.id);
+          const isFullyCompleted = pTasks.length > 0 && pTasks.every((t: any) => t.status === 'completed');
+          if (isFullyCompleted) return false;
+        }
+        
+        return p.status === selectedStatus;
+      });
     }
     if (selectedPriority !== 'all') {
       result = result.filter(p => p.priority === selectedPriority);

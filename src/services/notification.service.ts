@@ -13,7 +13,26 @@ export const notificationService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data as AppNotification[];
+    
+    // Default preferences if none set
+    const prefs = userData.user.user_metadata?.notification_preferences || {
+      task_assigned: true,
+      comment_added: true,
+      due_date_reminder: true,
+      mentions: true,
+      activity_summary: true,
+    };
+
+    const notifications = data as AppNotification[];
+    
+    // Filter notifications based on preferences
+    return notifications.filter(notif => {
+      if (notif.type === 'task_assigned' && prefs.task_assigned === false) return false;
+      if (notif.type === 'comment_added' && prefs.comment_added === false) return false;
+      if (notif.type === 'due_date_reminder' && prefs.due_date_reminder === false) return false;
+      // You can map other types here as well
+      return true;
+    });
   },
 
   async createNotification(dto: CreateNotificationDTO): Promise<void> {
@@ -21,7 +40,10 @@ export const notificationService = {
       .from('notifications')
       .insert(dto);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase raw error:', JSON.stringify(error, null, 2));
+      throw new Error(`Supabase Error ${error.code}: ${error.message} - ${error.details || ''}`);
+    }
   },
 
   async markAsRead(notificationId: string): Promise<void> {

@@ -2,8 +2,9 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useTasks } from '@/hooks/useTasks';
-import { useProjects } from '@/hooks/useProjects';
+import { useRouter } from 'next/navigation';
+import { useTasksByWorkspace, useTasks } from '@/hooks/useTasks';
+import { useProjectsByWorkspace } from '@/hooks/useProjects';
 import { useAuth } from '@/hooks/useAuth';
 import { useWorkspaceActivity } from '@/hooks/useActivity';
 import { useAppStore } from '@/store';
@@ -17,10 +18,16 @@ import { Task } from '@/types/task';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { tasks, isLoading: tasksLoading, updateTask } = useTasks();
-  const { projects, isLoading: projectsLoading } = useProjects();
   const { activeWorkspaceId } = useAppStore();
+  const { data: tasksData, isLoading: tasksLoading } = useTasksByWorkspace(activeWorkspaceId || undefined);
+  const { updateTask } = useTasks(); // Keep useTasks just for the mutation functions
+  const { data: projectsData, isLoading: projectsLoading } = useProjectsByWorkspace(activeWorkspaceId || '');
   const { data: activities, isLoading: activityLoading } = useWorkspaceActivity(activeWorkspaceId || undefined);
+
+  // Fallback to empty arrays while loading
+  const tasks = tasksData || [];
+  const projects = projectsData || [];
+  const router = useRouter();
 
   const [editingTask, setEditingTask] = React.useState<Task | null>(null);
 
@@ -185,7 +192,7 @@ export default function DashboardPage() {
                 <div 
                   key={task.id} 
                   className="group flex items-center justify-between p-3 border border-transparent hover:border-border/50 hover:bg-secondary/30 transition-all rounded-xl cursor-pointer"
-                  onClick={() => setEditingTask(task)}
+                  onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <button 
@@ -258,7 +265,7 @@ export default function DashboardPage() {
                         <div 
                           key={task.id} 
                           className="group flex items-center justify-between p-3 bg-secondary/30 hover:bg-secondary/60 border border-transparent hover:border-border/50 transition-all rounded-xl cursor-pointer"
-                          onClick={() => setEditingTask(task)}
+                          onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
                         >
                           <div className="min-w-0 flex flex-1 flex-row items-center gap-3">
                             <button 

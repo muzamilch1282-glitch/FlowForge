@@ -2,25 +2,31 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
 export function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { isLoading, user } = useAuth();
+
+  React.useEffect(() => {
+    // Bulletproof backup: If not loading and no user, force redirect to login
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [isLoading, user, router]);
 
   if (isLoading) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-background">
+      <div className="flex h-[100dvh] w-full items-center justify-center bg-background">
         <LoadingSpinner className="h-8 w-8 text-primary" />
       </div>
     );
   }
 
-  // If we're not loading and there's no user, we return null to prevent hydration flicker.
-  // The middleware will actually handle the redirect before this ever mounts, 
-  // but if it somehow leaks through, we don't render protected content.
+  // If we're not loading and there's no user, return null while the useEffect redirects.
   if (!user) {
     return null;
   }
@@ -33,7 +39,7 @@ export function ProtectedLayout({ children }: { children: React.ReactNode }) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
-        className="flex-1"
+        className="flex-1 h-full"
       >
         {children}
       </motion.div>

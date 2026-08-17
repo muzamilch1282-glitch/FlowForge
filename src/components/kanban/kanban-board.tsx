@@ -35,7 +35,7 @@ export function KanbanBoard({ initialBoardState, columns, projects, onTaskMove }
     if (!activeTask) {
       setBoardState(initialBoardState);
     }
-  }, [initialBoardState, activeTask]);
+  }, [initialBoardState]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -138,9 +138,11 @@ export function KanbanBoard({ initialBoardState, columns, projects, onTaskMove }
   };
 
   const onDragEnd = (event: DragEndEvent) => {
+    const originalTask = activeTask;
     setActiveTask(null);
-    const { active, over } = event;
-    if (!over) return;
+    
+    const { over } = event;
+    if (!over || !originalTask) return;
     
     // Calculate new status based on where it was dropped (either on a task or column)
     let newStatus: TaskStatus | null = null;
@@ -150,11 +152,9 @@ export function KanbanBoard({ initialBoardState, columns, projects, onTaskMove }
     } else if (over.data.current?.type === 'Column') {
       newStatus = over.id as TaskStatus;
     }
-
-    const activeTaskData = active.data.current?.task as Task;
     
-    if (newStatus && activeTaskData && activeTaskData.status !== newStatus) {
-      onTaskMove(activeTaskData.id, newStatus);
+    if (newStatus && originalTask.status !== newStatus) {
+      onTaskMove(originalTask.id, newStatus);
     }
   };
 
